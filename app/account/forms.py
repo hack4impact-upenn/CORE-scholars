@@ -97,3 +97,7 @@ class ChangeEmailForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+class ChangeLocationForm(Form):
+    location = StringField('location', validators=[InputRequired(), Length(1, 64)])
+    submit = SubmitField('Change Location')
