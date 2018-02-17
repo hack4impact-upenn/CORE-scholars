@@ -54,6 +54,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    modules = db.Column(db.String(8))
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -63,6 +64,11 @@ class User(UserMixin, db.Model):
                     permissions=Permission.ADMINISTER).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+        num_modules = 8
+        module_str = ""
+        for _ in range(num_modules):
+            module_str += '0'
+        self.modules = module_str
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)

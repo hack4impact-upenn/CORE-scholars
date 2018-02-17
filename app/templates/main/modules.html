@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+    <div class="ui text container">
+      <h1>Modules</h1>
+        {% for i in range(modules|length) %}
+          <div class="ui checkbox">
+            {% if modules[i] == '1' %}
+              <input id={{ "module" + (i+1)|string }} type="checkbox" checked>
+            {% else %}
+              <input id={{ "module" + (i+1)|string }} type="checkbox">
+            {% endif %}
+            <label>Module {{ (i+1)|string }}</label>
+          </div>
+          <div class="ui divider"></div>
+        {% endfor %}
+      <button id="progressSubmit" class="ui button">
+        Submit
+      </button>
+    </div>
+<script>
+    $(document).ready(function () {
+        $('#progressSubmit').click(function () {
+            var module_map = {};
+            for (var i = 1; i <= 8; i++) {
+                if ($('#module'+i).is(":checked")) {
+                    module_map[i] = true;
+                }
+                else {
+                    module_map[i] = false;
+                }
+            }
+            $.ajax({
+                type: 'POST',
+                url: "{{ url_for('main.modules_update') }}",
+                data: {data: JSON.stringify(module_map)},
+                dataType: 'json',
+                success: function(data, textStatus) {
+                    if (data.redirect) {
+                        window.location.href = data.redirect;
+                    }
+                }
+            }).done(function (response) {
+                location.reload();
+            });
+        });
+    });
+</script>
+{% endblock %}
