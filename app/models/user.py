@@ -45,6 +45,14 @@ class Role(db.Model):
         return '<Role \'%s\'>' % self.name
 
 
+class Transactions(db.Model):
+    __tablename__ = 'transactions'
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    new_balance = db.Column(db.Integer)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -55,6 +63,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     modules = db.Column(db.String(8))
+    bank_balance = db.Column(db.Integer)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
