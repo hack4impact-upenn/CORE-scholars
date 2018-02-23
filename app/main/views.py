@@ -1,12 +1,15 @@
 from flask import render_template, request, flash, redirect, url_for, jsonify
 from flask_login import current_user, login_required
-from ..models import EditableHTML
+from ..models import EditableHTML, Module
 
 from . import main
 from .. import db, csrf
 
 import logging
 import json
+import os
+import time
+import boto3
 
 @main.route('/')
 def index():
@@ -30,10 +33,9 @@ def modules():
 @csrf.exempt
 def modules_update():
     module_data = json.loads(request.form['data'])
-    new_module_string = ""
     for i in range(len(current_user.modules)):
-        new_module_string += '1' if module_data[str(i+1)] else '0'
-    current_user.modules = new_module_string
+        module = Module.query.filter_by(module_num=i, user_id=current_user.id).first()
+        module.certificate_url = module_data[str(i+1)]
     db.session.commit()
     flash('Your progress has been updated.', 'success')
     return jsonify({'status': 200})

@@ -44,6 +44,15 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role \'%s\'>' % self.name
 
+module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+ db.Column('certificate_url', db.String, db.ForeignKey('modules.certificate_url'))
+)
+
+class Module(db.Model):
+    __tablename__ = 'modules'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    certificate_url = db.Column(db.String(256), unique=True, primary_key=True)
+    module_num = db.Column(db.Integer, index=True)
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -54,7 +63,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    modules = db.Column(db.String(8))
+    modules = db.Relationship('Module', secondary=module_associations)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -66,9 +75,10 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(default=True).first()
         num_modules = 8
         module_str = ""
-        for _ in range(num_modules):
-            module_str += '0'
-        self.modules = module_str
+        for i in range(num_modules):
+            module = Module(user_id=self.id, certificate_url="", module_num=i)
+            self.modules.append(module)
+            db.session.commit()
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
