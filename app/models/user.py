@@ -45,14 +45,15 @@ class Role(db.Model):
         return '<Role \'%s\'>' % self.name
 
 module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
- db.Column('certificate_url', db.String, db.ForeignKey('modules.certificate_url'))
+ db.Column('module_num', db.Integer, db.ForeignKey('modules.module_num'))
 )
 
 class Module(db.Model):
     __tablename__ = 'modules'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    certificate_url = db.Column(db.String(256), unique=True, primary_key=True)
-    module_num = db.Column(db.Integer, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    certificate_url = db.Column(db.String(256), unique=True)
+    module_num = db.Column(db.Integer, index=True, primary_key=True)
+    filename = db.Column(db.String(256))
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -63,7 +64,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    modules = db.Relationship('Module', secondary=module_associations)
+    modules = db.relationship('Module', secondary=module_associations)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -73,12 +74,6 @@ class User(UserMixin, db.Model):
                     permissions=Permission.ADMINISTER).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
-        num_modules = 8
-        module_str = ""
-        for i in range(num_modules):
-            module = Module(user_id=self.id, certificate_url="", module_num=i)
-            self.modules.append(module)
-            db.session.commit()
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)

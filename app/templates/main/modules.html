@@ -3,15 +3,19 @@
 {% block content %}
     <div class="ui text container">
       <h1>Modules</h1>
-        {% for i in range(modules|length) %}
+        {% for i in range(num_modules) %}
           <div class="ui checkbox">
-            {% if modules[i] == '1' %}
-              <input id={{ "module" + (i+1)|string }} type="checkbox" checked style="display:inline-block" disabled>
+            {% if i in modules.keys() %}
+              <input id={{ "module" + (i+1)|string }} type="checkbox" checked style="display:inline-block">
             {% else %}
-              <input id={{ "module" + (i+1)|string }} type="checkbox" style="display:inline-block" disabled>
+              <input id={{ "module" + (i+1)|string }} type="checkbox" style="display:inline-block"> 
             {% endif %}
             <label style="display:inline-block">Module {{ (i+1)|string }}</label>
-            <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block"></input>
+            <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block">
+            {% if i in modules.keys() %}
+                {{ modules[i] }}
+            {% endif %}
+            </input>
           </div>
           <div class="ui divider"></div>
         {% endfor %}
@@ -20,6 +24,8 @@
  function uploadFile(file, s3Data, url, urlUpload, fieldName){
   // basic validation
   var fileType = url.substring(url.lastIndexOf('.') + 1);
+  console.log(url);
+  console.log(urlUpload);
 
   var xhr = new XMLHttpRequest();
   xhr.upload.addEventListener("progress", updateProgress);
@@ -75,7 +81,7 @@ function getSignedRequest(file, fieldName){
         var response = JSON.parse(xhr.responseText);
         console.log("response form json dumps: ", response);
         uploadFile(file, response.data, response.url, response.url_upload, fieldName);
-        progressUpdate(url, parseInt(fieldName));
+        progressUpdate(response.url_upload, file.name, parseInt(fieldName));
       }
       else{
         alert('Could not get signed URL.');
@@ -85,12 +91,11 @@ function getSignedRequest(file, fieldName){
   xhr.send();
 }
 
-function progressUpdate(url, field) {
+function progressUpdate(url, filename, field) {
     var module_map = {};
-    for (var i = 1; i <= 8; i++) {
-       module_map[i] = "";
-    }
-    module_map[field] = url;
+    module_map["module_num"] = field;
+    module_map["certificate_url"] = url
+    module_map["filename"] = filename
     $.ajax({
         type: 'POST',
         url: "{{ url_for('main.modules_update') }}",
@@ -140,6 +145,5 @@ function progressUpdate(url, field) {
             });
         });
     });
-
-f</script>
+</script>
 {% endblock %}

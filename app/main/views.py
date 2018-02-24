@@ -26,16 +26,25 @@ def about():
 @login_required
 def modules():
     return render_template('main/modules.html',
-                           modules=current_user.modules)
+                           modules={module.module_num:module.filename for module in current_user.modules},
+                           num_modules=8)
 
 @main.route('/modules-update', methods=['GET', 'POST'])
 @login_required
 @csrf.exempt
 def modules_update():
     module_data = json.loads(request.form['data'])
+    already_exists = False
     for i in range(len(current_user.modules)):
-        module = Module.query.filter_by(module_num=i, user_id=current_user.id).first()
-        module.certificate_url = module_data[str(i+1)]
+        module_num = current_user.modules[i].module_num
+        if module_data['module_num'] == module_num:
+            module = current_user.modules[i]
+            module.filename = module_data['filename']
+            module.certificate_url = module_data['certificate_url']
+            already_exists = True
+            break
+    if not already_exists:
+        module = Module(user_id=current_user.id, module_num=module_data['module_num'], filename=module_data['filename'], certificate_url=module_data['certificate_url'])
     db.session.commit()
     flash('Your progress has been updated.', 'success')
     return jsonify({'status': 200})
