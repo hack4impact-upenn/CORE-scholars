@@ -25,6 +25,7 @@ def about():
 @main.route('/modules')
 @login_required
 def modules():
+    logging.error(str(current_user.modules))
     return render_template('main/modules.html',
                            modules={module.module_num:module.filename for module in current_user.modules},
                            num_modules=8)
@@ -34,6 +35,8 @@ def modules():
 @csrf.exempt
 def modules_update():
     module_data = json.loads(request.form['data'])
+    logging.error('here')
+    logging.error(str(module_data))
     already_exists = False
     for i in range(len(current_user.modules)):
         module_num = current_user.modules[i].module_num
@@ -45,6 +48,7 @@ def modules_update():
             break
     if not already_exists:
         module = Module(user_id=current_user.id, module_num=module_data['module_num'], filename=module_data['filename'], certificate_url=module_data['certificate_url'])
+        current_user.modules.append(module)
     db.session.commit()
     flash('Your progress has been updated.', 'success')
     return jsonify({'status': 200})

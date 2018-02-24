@@ -5,15 +5,15 @@
       <h1>Modules</h1>
         {% for i in range(num_modules) %}
           <div class="ui checkbox">
-            {% if i in modules.keys() %}
+            {% if i+1 in modules.keys() %}
               <input id={{ "module" + (i+1)|string }} type="checkbox" checked style="display:inline-block">
             {% else %}
               <input id={{ "module" + (i+1)|string }} type="checkbox" style="display:inline-block"> 
             {% endif %}
             <label style="display:inline-block">Module {{ (i+1)|string }}</label>
             <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block">
-            {% if i in modules.keys() %}
-                {{ modules[i] }}
+            {% if i+1 in modules.keys() %}
+                {{ modules[i+1] }}
             {% endif %}
             </input>
           </div>
@@ -51,7 +51,7 @@
   xhr.onreadystatechange = function()  {
     if(xhr.readyState === 4){
       if(xhr.status === 200 || xhr.status === 204) {
-        handleFunc(url, fieldName);
+        progressUpdate(url, file.name, parseInt(fieldName));
       }
       else{
         console.log("\n\n\nstatus: ", xhr.status);
@@ -81,7 +81,6 @@ function getSignedRequest(file, fieldName){
         var response = JSON.parse(xhr.responseText);
         console.log("response form json dumps: ", response);
         uploadFile(file, response.data, response.url, response.url_upload, fieldName);
-        progressUpdate(response.url_upload, file.name, parseInt(fieldName));
       }
       else{
         alert('Could not get signed URL.');
@@ -119,30 +118,6 @@ function progressUpdate(url, filename, field) {
         });
         $('input:checkbox').each(function() {
             this.disabled = true;
-        });
-        $('#progressSubmit').click(function () {
-            var module_map = {};
-            for (var i = 1; i <= 8; i++) {
-                if ($('#module'+i).is(":checked")) {
-                    module_map[i] = true;
-                }
-                else {
-                    module_map[i] = false;
-                }
-            }
-            $.ajax({
-                type: 'POST',
-                url: "{{ url_for('main.modules_update') }}",
-                data: {data: JSON.stringify(module_map)},
-                dataType: 'json',
-                success: function(data, textStatus) {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                }
-            }).done(function (response) {
-                location.reload();
-            });
         });
     });
 </script>
