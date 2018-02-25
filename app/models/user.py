@@ -65,7 +65,7 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     modules = db.Column(db.String(8))
-    bank_balance = db.Column(db.Integer)
+
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
