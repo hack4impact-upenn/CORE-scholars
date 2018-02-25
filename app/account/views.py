@@ -9,8 +9,14 @@ from ..email import send_email
 from ..models import User
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm)
+                    ResetPasswordForm, ChangeLocationForm, ApplicantInfoForm)
 
+@account.route('/user-info/primary', methods=['GET', 'POST'])
+def user_info():
+    form = ApplicantInfoForm()
+    if form.validate_on_submit():
+        flash('Thank you!', 'success')
+    return render_template('account/user-info.html', form=form)
 
 @account.route('/login', methods=['GET', 'POST'])
 def login():
@@ -53,6 +59,15 @@ def register():
               'warning')
         return redirect(url_for('main.index'))
     return render_template('account/register.html', form=form)
+
+
+@account.route('/location', methods=['GET', 'POST'])
+def location():
+    """Register a new user, and send them a confirmation email."""
+    form = ChangeLocationForm()
+    if form.validate_on_submit():
+        current_user.change_location(form.location.data)
+    return render_template('account/location.html', form=form, location=current_user.location)
 
 
 @account.route('/logout')

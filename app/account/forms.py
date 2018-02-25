@@ -2,7 +2,7 @@ from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
 from wtforms.fields import (BooleanField, PasswordField, StringField,
-                            SubmitField)
+                            SubmitField, RadioField, IntegerField, FormField, SelectField)
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, EqualTo, InputRequired, Length
 
@@ -97,3 +97,23 @@ class ChangeEmailForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+class ChangeLocationForm(Form):
+    location = StringField('location', validators=[InputRequired(), Length(1, 64)])
+    submit = SubmitField('Change Location')
+
+class TelephoneForm(Form):
+    country_code = IntegerField('Country Code', validators=[InputRequired()])
+    area_code    = IntegerField('Area Code/Exchange', validators=[InputRequired()])
+    number       = StringField('Number')
+
+class ApplicantInfoForm(Form):
+    name = StringField('name', validators=[InputRequired(), Length(1, 64)])
+    contact_info = FormField(TelephoneForm)
+    birthday = StringField('birthday', validators=[InputRequired(), Length(1, 64)])
+    gender = RadioField('gender', validators=[InputRequired()], choices=['Female', 'Male', 'Other', 'Declined'])
+    ethnicity = SelectField('ethnicity', validators=[InputRequired()], choices=['Black', 'Asian', 'White', 'American Indian', 'Multiracial', 'Hispanic or Latino', 'Not Hispanic', 'Unknown', 'Declined'])
+    age = RadioField('age', validators=[InputRequired()], choices=['19 and under', '20-29', '30-39', '40-49', '50+', 'Declined'])
+    marital_status = RadioField('marital_status', validators=[InputRequired()], choices=['single', '20-29', '30-39', '40-49', '50+', 'Declined'])
+
+
