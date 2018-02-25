@@ -111,9 +111,8 @@ class ApplicantInfoForm(Form):
     name = StringField('name', validators=[InputRequired(), Length(1, 64)])
     contact_info = FormField(TelephoneForm)
     birthday = StringField('birthday', validators=[InputRequired(), Length(1, 64)])
-    gender = RadioField('gender', validators=[InputRequired()], choices=['Female', 'Male', 'Other', 'Declined'])
-    ethnicity = SelectField('ethnicity', validators=[InputRequired()], choices=['Black', 'Asian', 'White', 'American Indian', 'Multiracial', 'Hispanic or Latino', 'Not Hispanic', 'Unknown', 'Declined'])
-    age = RadioField('age', validators=[InputRequired()], choices=['19 and under', '20-29', '30-39', '40-49', '50+', 'Declined'])
-    marital_status = RadioField('marital_status', validators=[InputRequired()], choices=['single', '20-29', '30-39', '40-49', '50+', 'Declined'])
-
-
+    gender = RadioField('gender', validators=[InputRequired()], choices=[('female','Female'), ('male', 'Male'), ('other', 'Other'), ('declined', 'Declined')])
+    ethnicity = SelectField('ethnicity', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['Black', 'Asian', 'White', 'American Indian', 'Multiracial', 'Hispanic or Latino', 'Not Hispanic', 'Unknown', 'Declined']])
+    age = RadioField('age', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['19 and under', '20-29', '30-39', '40-49', '50+', 'Declined']])
+    marital_status = RadioField('marital_status', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['single', '20-29', '30-39', '40-49', '50+', 'Declined']])
+    submit = SubmitField('Submit')
