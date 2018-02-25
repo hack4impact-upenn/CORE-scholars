@@ -9,8 +9,14 @@ from ..email import send_email
 from ..models import User
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ChangeLocationForm)
+                    ResetPasswordForm, ChangeLocationForm, ApplicantInfoForm)
 
+@account.route('/user-info/primary', methods=['GET', 'POST'])
+def user_info():
+    form = ApplicantInfoForm()
+    if form.validate_on_submit():
+        flash('Thank you!', 'success')
+    return render_template('account/user-info.html', form=form)
 
 @account.route('/login', methods=['GET', 'POST'])
 def login():
