@@ -1,10 +1,10 @@
 from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField,
-                            SubmitField, RadioField, IntegerField, FormField, SelectField)
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import Email, EqualTo, InputRequired, Length
+from wtforms.fields import (BooleanField, PasswordField, StringField, SubmitField,
+                            RadioField, IntegerField, FormField, SelectField)
+from wtforms.fields.html5 import EmailField, DateField, TelField
+from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp
 
 from ..models import User
 
@@ -98,21 +98,36 @@ class ChangeEmailForm(Form):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
 
+
 class ChangeLocationForm(Form):
     location = StringField('location', validators=[InputRequired(), Length(1, 64)])
     submit = SubmitField('Change Location')
 
-class TelephoneForm(Form):
-    country_code = IntegerField('Country Code', validators=[InputRequired()])
-    area_code    = IntegerField('Area Code/Exchange', validators=[InputRequired()])
-    number       = StringField('Number')
+
+phone_validator = Regexp('^\+(?:[0-9] ?){6,14}[0-9]$', message="Not a valid phone number.")
+
 
 class ApplicantInfoForm(Form):
-    name = StringField('name', validators=[InputRequired(), Length(1, 64)])
-    contact_info = FormField(TelephoneForm)
-    birthday = StringField('birthday', validators=[InputRequired(), Length(1, 64)])
-    gender = RadioField('gender', validators=[InputRequired()], choices=[('female','Female'), ('male', 'Male'), ('other', 'Other'), ('declined', 'Declined')])
-    ethnicity = SelectField('ethnicity', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['Black', 'Asian', 'White', 'American Indian', 'Multiracial', 'Hispanic or Latino', 'Not Hispanic', 'Unknown', 'Declined']])
-    age = RadioField('age', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['19 and under', '20-29', '30-39', '40-49', '50+', 'Declined']])
-    marital_status = RadioField('marital_status', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['single', '20-29', '30-39', '40-49', '50+', 'Declined']])
+    first_name = StringField('First Name', validators=[InputRequired(), Length(1, 64)])
+    last_name = StringField('Last Name', validators=[InputRequired(), Length(1, 64)])
+    dob = DateField('Date of Birth', format='%m/%d/%Y', validators=[InputRequired()])
+    ethnicity = SelectField('Ethnicity', validators=[InputRequired()], choices=
+        [(v.lower(), v) for v in ['American Indian', 'Asian', 'Black', 'Hispanic or Latino',
+                                  'Multiracial', 'White', 'Decline to Identify']])
+    mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator])
+    home_phone = TelField('Home Phone', validators=[InputRequired(), phone_validator])
+    marital_status = SelectField('Marital Status', validators=[InputRequired()], choices=
+        [(v.lower(), v) for v in ['Single', 'Married', 'Divorced']])
+    household_status = SelectField('Household Status', validators=[InputRequired()], choices=
+        [(v.lower(), v) for v in ['One-person', 'Non-family Household', 'Family Household',
+                                  'Married Couple']])
+
+    street = StringField('Street', validators=[InputRequired(), Length(1, 64)])
+    street2 = StringField('Street2')
+    city = StringField('City', validators=[InputRequired(), Length(1, 64)])
+    state = StringField('State', validators=[InputRequired(), Length(1, 64)])
+    zip = StringField('Zip', validators=[InputRequired(), Length(1, 64)])
+
+    # gender = RadioField('gender', validators=[InputRequired()], choices=[('female', 'Female'), ('male', 'Male'), ('other', 'Other'), ('declined', 'Declined')])
+    # age = RadioField('age', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['19 and under', '20-29', '30-39', '40-49', '50+', 'Declined']])
     submit = SubmitField('Submit')
