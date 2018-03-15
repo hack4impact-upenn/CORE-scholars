@@ -277,4 +277,12 @@ def user_info():
     form = ApplicantInfoForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
+        print('dammit')
+        # print(form.ethnicity.data)
+        # print(form.ethnicity.__dict__)
+        print('ugh')
+    else:
+        print('what happened')
+        print(form.errors)
+        print(form.gender.data)
     return render_template('account/user-info.html', form=form)

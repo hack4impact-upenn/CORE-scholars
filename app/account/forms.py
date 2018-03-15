@@ -5,6 +5,7 @@ from wtforms.fields import (BooleanField, PasswordField, StringField, SubmitFiel
                             RadioField, IntegerField, FormField, SelectField)
 from wtforms.fields.html5 import EmailField, DateField, TelField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp
+from wtforms.widgets import Input
 
 from ..models import User
 
@@ -104,30 +105,27 @@ class ChangeLocationForm(Form):
     submit = SubmitField('Change Location')
 
 
-phone_validator = Regexp('^\+(?:[0-9] ?){6,14}[0-9]$', message="Not a valid phone number.")
+phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
+                         message="Not a valid phone number. Try the format 111-111-1111")
 
 
 class ApplicantInfoForm(Form):
     first_name = StringField('First Name', validators=[InputRequired(), Length(1, 64)])
     last_name = StringField('Last Name', validators=[InputRequired(), Length(1, 64)])
-    dob = DateField('Date of Birth', format='%m/%d/%Y', validators=[InputRequired()])
-    ethnicity = SelectField('Ethnicity', validators=[InputRequired()], choices=
-        [(v.lower(), v) for v in ['American Indian', 'Asian', 'Black', 'Hispanic or Latino',
-                                  'Multiracial', 'White', 'Decline to Identify']])
+    dob = DateField('Date of Birth', format='%Y-%m-%d', validators=[InputRequired()])
+    gender = StringField('Gender', validators=[InputRequired()])
+    ethnicity = StringField('Ethnicity', validators=[InputRequired()])
     mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator])
-    home_phone = TelField('Home Phone', validators=[InputRequired(), phone_validator])
-    marital_status = SelectField('Marital Status', validators=[InputRequired()], choices=
-        [(v.lower(), v) for v in ['Single', 'Married', 'Divorced']])
-    household_status = SelectField('Household Status', validators=[InputRequired()], choices=
-        [(v.lower(), v) for v in ['One-person', 'Non-family Household', 'Family Household',
-                                  'Married Couple']])
-
-    street = StringField('Street', validators=[InputRequired(), Length(1, 64)])
-    street2 = StringField('Street2')
+    home_phone = TelField('Home Phone', validators=[phone_validator])
+    marital_status = StringField('Marital Status', validators=[InputRequired()])
+    household_status = StringField('Household Status', validators=[InputRequired()])
+    citizenship_status = StringField('Citizenship Status', validators=[InputRequired()])
+    work_status = StringField('Work', validators=[InputRequired()])
+    street = StringField('Street Address', validators=[InputRequired(), Length(1, 64)])
     city = StringField('City', validators=[InputRequired(), Length(1, 64)])
     state = StringField('State', validators=[InputRequired(), Length(1, 64)])
     zip = StringField('Zip', validators=[InputRequired(), Length(1, 64)])
+    tanf = StringField('TANF', validators=[InputRequired()])
+    etic = StringField('ETIC', validators=[InputRequired()])
 
-    # gender = RadioField('gender', validators=[InputRequired()], choices=[('female', 'Female'), ('male', 'Male'), ('other', 'Other'), ('declined', 'Declined')])
-    # age = RadioField('age', validators=[InputRequired()], choices=[(v.lower(), v) for v in ['19 and under', '20-29', '30-39', '40-49', '50+', 'Declined']])
     submit = SubmitField('Submit')

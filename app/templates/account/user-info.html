@@ -13,25 +13,32 @@
             } %}
 
             {{ f.begin_form(form, flashes) }}
-                {{ f.render_form_field(form.first_name) }}
-                {{ f.render_form_field(form.last_name) }}
-                {{ f.render_form_field(form.dob) }}
-                {{ f.render_form_field(form.ethnicity) }}
-                {{ f.render_form_field(form.mobile_phone) }}
+                {{ f.render_form_field(form.first_name, extra_classes='required') }}
+                {{ f.render_form_field(form.last_name, extra_classes='required') }}
+                {{ f.render_form_field(form.dob, extra_classes='required') }}
+                {{ f.render_custom_select(form.gender, required=True, multiple=True,
+                    choices=['Male', 'Female', 'Trans', 'Non-binary', 'Bigender']) }}
+                {{ f.render_custom_select(form.ethnicity, required=True, choices=
+                    ['American Indian', 'Asian', 'Black', 'Hispanic or Latino', 'Multiracial',
+                     'White', 'Decline to Identify']) }}
+                {{ f.render_form_field(form.mobile_phone, extra_classes='required') }}
                 {{ f.render_form_field(form.home_phone) }}
-                {{ f.render_form_field(form.marital_status) }}
-                {{ f.render_form_field(form.household_status) }}
-
-                {{ f.render_form_field(form.street) }}
-                {{ f.render_form_field(form.street2) }}
-                {{ f.render_form_field(form.city) }}
-                {{ f.render_form_field(form.state) }}
-                {{ f.render_form_field(form.zip) }}
-
-{#                {{ f.render_form_field(form.contact_info) }}#}
-{#                {{ f.render_form_field(form.age) }}#}
+                {{ f.render_custom_select(form.citizenship_status, required=True, choices=['US Citizen']) }}
+                {{ f.render_custom_select(form.marital_status, required=True, choices=
+                    ['Single', 'Married', 'Divorced'])}}
+                {{ f.render_custom_select(form.household_status, required=True, choices=
+                    ['One-person', 'Non-family Household', 'Family Household', 'Married Couple']) }}
+                {{ f.render_custom_select(form.work_status, required=True, choices=
+                        ['Student', 'Full-time Employed', 'Part-time Employed', 'Unemployed']) }}
+                {{ f.render_form_field(form.street, extra_classes='required') }}
+                {{ f.render_form_field(form.city, extra_classes='required') }}
+                {{ f.render_form_field(form.state, extra_classes='required') }}
+                {{ f.render_form_field(form.zip, extra_classes='required') }}
+                {{ f.render_custom_select(form.tanf, required=True, choices=['TANF', 'Not TANF']) }}
+                {{ f.render_custom_select(form.etic, required=True, choices=['ETIC', 'Declined']) }}
 
                 {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+                {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
                 {{ f.form_message(flashes['info'], header='Information', class='info') }}
                 {{ f.form_message(flashes['success'], header='Success!', class='success') }}
 

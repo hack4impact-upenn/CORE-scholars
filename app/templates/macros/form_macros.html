@@ -76,6 +76,30 @@
 {% endmacro %}
 
 {# Render a field for the form #}
+{% macro render_custom_select(field, choices, multiple=False, required=False) %}
+    <div  class="{% if required %}required {% endif %}field">
+        {{ field.label }}
+        <div id="{{field.name}}" class="ui fluid {% if multiple %}multiple {% endif %}search selection dropdown">
+            <input name="{{field.name}}" type="hidden">
+            <i class="dropdown icon"></i>
+            <div class="default text">{{field.label.text}}</div>
+            <div class="menu">
+                {% for choice in choices %}
+                    <div class="item">{{choice}}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#{{field.name}}').dropdown({
+              allowAdditions: true
+            })
+        });
+    </script>
+{% endmacro %}
+
+{# Render a field for the form #}
 {% macro render_form_field(field, extra_classes='') %}
     {% if field.type == 'Radio Field' %}
         {% set extra_classes = extra_classes + ' grouped fields' %}
