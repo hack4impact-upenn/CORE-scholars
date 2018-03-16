@@ -64,6 +64,9 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     modules = db.Column(db.String(8))
     bank_balance = db.Column(db.Integer)
+    savings_start_date = db.Column(db.Date)
+    savings_end_date = db.Column(db.Date)
+    goal_amount = db.Column(db.Integer)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -78,6 +81,9 @@ class User(UserMixin, db.Model):
         for _ in range(num_modules):
             module_str += '0'
         self.modules = module_str
+        self.savings_start_date = None
+        self.savings_end_date = None
+        self.goal_amount = 500
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
