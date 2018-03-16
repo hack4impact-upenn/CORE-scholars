@@ -10,13 +10,14 @@
             {% else %}
               <input id={{ "module" + (i+1)|string }} type="checkbox" style="display:inline-block"> 
             {% endif %}
+          </div>
             <label style="display:inline-block">Module {{ (i+1)|string }}</label>
-            <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block">
             {% if i+1 in modules.keys() %}
-                {{ modules[i+1] }}
+                <a href={{ modules[i+1].certificate_url }}>{{ modules[i+1].filename }}</a>
+            {% else %}
+                <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block">
             {% endif %}
             </input>
-          </div>
           <div class="ui divider"></div>
         {% endfor %}
     </div>

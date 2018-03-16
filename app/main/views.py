@@ -27,7 +27,7 @@ def about():
 def modules():
     logging.error(str(current_user.modules))
     return render_template('main/modules.html',
-                           modules={module.module_num:module.filename for module in current_user.modules},
+                           modules={module.module_num:module for module in current_user.modules},
                            num_modules=8)
 
 @main.route('/modules-update', methods=['GET', 'POST'])
@@ -44,6 +44,7 @@ def modules_update():
             module = current_user.modules[i]
             module.filename = module_data['filename']
             module.certificate_url = module_data['certificate_url']
+            logging.error(module.certificate_url)
             already_exists = True
             break
     if not already_exists:
