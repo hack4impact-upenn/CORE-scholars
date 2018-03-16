@@ -109,8 +109,6 @@ phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?
 
 
 class ApplicantInfoForm(Form):
-    first_name = StringField('First Name', validators=[InputRequired(), Length(1, 64)])
-    last_name = StringField('Last Name', validators=[InputRequired(), Length(1, 64)])
     dob = DateField('Date of Birth', format='%Y-%m-%d', validators=[InputRequired()])
     gender = CustomSelectField('Gender', validators=[InputRequired(), Length(1, 64)], choices=
         ['Male', 'Female', 'Trans', 'Non-binary', 'Bigender'], multiple=True)

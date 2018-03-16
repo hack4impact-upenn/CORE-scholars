@@ -65,6 +65,22 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     modules = db.Column(db.String(8))
+    dob = db.Column(db.String(64))
+    gender = db.Column(db.String(64))
+    ethnicity = db.Column(db.String(64))
+    mobile_phone = db.Column(db.String(64))
+    home_phone = db.Column(db.String(64))
+    marital_status = db.Column(db.String(64))
+    household_status = db.Column(db.String(64))
+    citizenship_status = db.Column(db.String(64))
+    work_status = db.Column(db.String(64))
+    street = db.Column(db.String(64))
+    city = db.Column(db.String(64))
+    state = db.Column(db.String(64))
+    zip = db.Column(db.String(64))
+    tanf = db.Column(db.String(64))
+    etic = db.Column(db.String(64))
+    number_of_children = db.Column(db.String(64))
 
 
     def __init__(self, **kwargs):
