@@ -1,0 +1,42 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
+
+{% block content %}
+    <div class="ui grid container">
+        <div class="eight wide computer sixteen wide mobile centered column">
+            <h2 class="ui dividing header">Applicant Information</h2>
+
+            {% set flashes = {
+                'error':   get_flashed_messages(category_filter=['form-error']),
+                'info':    get_flashed_messages(category_filter=['form-info']),
+                'success': get_flashed_messages(category_filter=['form-success'])
+            } %}
+
+            {{ f.begin_form(form, flashes) }}
+                {{ f.render_form_field(form.dob, extra_classes='required') }}
+                {{ f.render_form_field(form.gender, extra_classes='required') }}
+                {{ f.render_form_field(form.ethnicity, extra_classes='required') }}
+                {{ f.render_form_field(form.mobile_phone, extra_classes='required') }}
+                {{ f.render_form_field(form.home_phone) }}
+                {{ f.render_form_field(form.citizenship_status, extra_classes='required') }}
+                {{ f.render_form_field(form.marital_status, extra_classes='required') }}
+                {{ f.render_form_field(form.household_status, extra_classes='required') }}
+                {{ f.render_form_field(form.work_status, extra_classes='required') }}
+                {{ f.render_form_field(form.street, extra_classes='required') }}
+                {{ f.render_form_field(form.city, extra_classes='required') }}
+                {{ f.render_form_field(form.state, extra_classes='required') }}
+                {{ f.render_form_field(form.zip, extra_classes='required') }}
+                {{ f.render_form_field(form.tanf, extra_classes='required') }}
+                {{ f.render_form_field(form.etic, extra_classes='required') }}
+                {{ f.render_form_field(form.number_of_children, extra_classes='required') }}
+
+                {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+                {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
+                {{ f.form_message(flashes['info'], header='Information', class='info') }}
+                {{ f.form_message(flashes['success'], header='Success!', class='success') }}
+
+                {{ f.render_form_field(form.submit) }}
+            {{ f.end_form(form) }}
+        </div>
+    </div>
+{% endblock %}

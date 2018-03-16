@@ -1,10 +1,10 @@
 from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField,
-                            SubmitField)
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import Email, EqualTo, InputRequired, Length
+from wtforms.fields import (BooleanField, PasswordField, StringField, SubmitField, IntegerField, SubmitField, Field)
+from wtforms.fields.html5 import EmailField, DateField, TelField, IntegerField
+from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp, NumberRange
+from ..utils import CustomSelectField
 
 from ..models import User
 
@@ -97,3 +97,40 @@ class ChangeEmailForm(Form):
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
             raise ValidationError('Email already registered.')
+
+
+class ChangeLocationForm(Form):
+    location = StringField('location', validators=[InputRequired(), Length(1, 64)])
+    submit = SubmitField('Change Location')
+
+
+phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
+                         message="Not a valid phone number. Try the format 111-111-1111")
+
+
+class ApplicantInfoForm(Form):
+    dob = DateField('Date of Birth', format='%Y-%m-%d', validators=[InputRequired()])
+    gender = CustomSelectField('Gender', validators=[InputRequired(), Length(1, 64)], choices=
+        ['Male', 'Female', 'Trans', 'Non-binary', 'Bigender'], multiple=True)
+    ethnicity = CustomSelectField('Ethnicity', validators=[InputRequired(), Length(1, 64)], choices=
+        ['American Indian', 'Asian', 'Black', 'Hispanic or Latino', 'Multiracial','White', 'Decline to Identify'])
+    mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator, Length(1, 64)])
+    home_phone = TelField('Home Phone', validators=[phone_validator, Length(0, 64)])
+    marital_status = CustomSelectField('Marital Status', validators=[InputRequired(), Length(1, 64)], choices=
+        ['Single', 'Married', 'Divorced'])
+    household_status = CustomSelectField('Household Status', validators=[InputRequired(), Length(1, 64)], choices=
+        ['One-person', 'Non-family Household', 'Family Household', 'Married Couple'])
+    citizenship_status = CustomSelectField('Citizenship Status', validators=[InputRequired(), Length(1, 64)], choices=
+        ['US Citizen'])
+    work_status = CustomSelectField('Work', validators=[InputRequired(), Length(1, 64)], choices=
+        ['Student', 'Full-time Employed', 'Part-time Employed', 'Unemployed'])
+    street = StringField('Street Address', validators=[InputRequired(), Length(1, 64)])
+    city = StringField('City', validators=[InputRequired(), Length(1, 64)])
+    state = StringField('State', validators=[InputRequired(), Length(1, 64)])
+    zip = StringField('Zip', validators=[InputRequired(), Length(1, 64)])
+    tanf = CustomSelectField('TANF', validators=[InputRequired(), Length(1, 64)], choices=['TANF', 'Not TANF'])
+    etic = CustomSelectField('ETIC', validators=[InputRequired(), Length(1, 64)], choices=['ETIC', 'Declined'])
+    number_of_children = IntegerField('Number of Children', validators=
+        [InputRequired(), NumberRange(min=0, max=10)], default=0)
+
+    submit = SubmitField('Submit')
