@@ -1,18 +1,25 @@
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for, jsonify
 from flask_login import (current_user, login_required, login_user,
                          logout_user)
 from flask_rq import get_queue
 
 from . import account
-from .. import db
+from .. import db, csrf
 from ..email import send_email
-from ..models import User
+from ..models import User, Module
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ChangeLocationForm, ApplicantInfoForm)
+                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm)
 from wtforms.fields.core import Label
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
+
+
+@account.route('/')
+def index():
+    return render_template('account/index.html')
+
 
 @account.route('/login', methods=['GET', 'POST'])
 def login():
@@ -275,9 +282,61 @@ def unconfirmed():
     return render_template('account/unconfirmed.html')
 
 
-@account.route('/manage/primary', methods=['GET', 'POST'])
-def user_info():
+@account.route('/manage/applicant-information', methods=['GET', 'POST'])
+def applicant_info():
     form = ApplicantInfoForm()
+    if form.validate_on_submit():
+        flash('Thank you!', 'success')
+        current_user.dob = form.dob.data
+        current_user.gender = form.gender.data
+        current_user.ethnicity = form.ethnicity.data
+        current_user.mobile_phone = form.mobile_phone.data
+        current_user.home_phone = form.home_phone.data
+        current_user.marital_status = form.marital_status.data
+        current_user.household_status = form.household_status.data
+        current_user.citizenship_status = form.citizenship_status.data
+        current_user.work_status = form.work_status.data
+        current_user.street = form.street.data
+        current_user.city = form.city.data
+        current_user.state = form.state.data
+        current_user.zip = form.zip.data
+        current_user.tanf = form.tanf.data
+        current_user.etic = form.etic.data
+        current_user.number_of_children = form.number_of_children.data
+        current_user.completed_forms = True
+
+        db.session.add(current_user)
+        db.session.commit()
+        return redirect(url_for('account.index'))
+    else:
+        logging.error(str(form.errors))
+
+    return render_template('account/user-info.html', form=form)
+
+
+@account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
+def applicant_info_edit():
+    form = ApplicantInfoForm()
+    current_user.id
+    if current_user.completed_forms:
+        form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
+        form.gender.data = current_user.gender
+        form.ethnicity.data = current_user.ethnicity
+        form.mobile_phone.data = current_user.mobile_phone
+        form.home_phone.data = current_user.home_phone
+        form.marital_status.data = current_user.marital_status
+        form.household_status.data = current_user.household_status
+        form.citizenship_status.data = current_user.citizenship_status
+        form.work_status.data = current_user.work_status
+        form.street.data = current_user.street
+        form.city.data = current_user.city
+        form.state.data = current_user.state
+        form.zip.data = current_user.zip
+        form.tanf.data = current_user.tanf
+        form.etic.data = current_user.etic
+        form.number_of_children.data = current_user.number_of_children
+        form.submit.label = Label('submit', 'Save Information')
+
     if form.validate_on_submit():
         flash('Thank you!', 'success')
         current_user.dob = form.dob.data
@@ -299,56 +358,76 @@ def user_info():
 
         db.session.add(current_user)
         db.session.commit()
+        return redirect(url_for('account.index'))
     else:
         logging.error(str(form.errors))
 
     return render_template('account/user-info.html', form=form)
 
 
-@account.route('/manage/primary-edit', methods=['GET', 'POST'])
-def user_info_edit():
-    form = ApplicantInfoForm()
-    form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
-    form.gender.data = current_user.gender
-    form.ethnicity.data = current_user.ethnicity
-    form.mobile_phone.data = current_user.mobile_phone
-    form.home_phone.data = current_user.home_phone
-    form.marital_status.data = current_user.marital_status
-    form.household_status.data = current_user.household_status
-    form.citizenship_status.data = current_user.citizenship_status
-    form.work_status.data = current_user.work_status
-    form.street.data = current_user.street
-    form.city.data = current_user.city
-    form.state.data = current_user.state
-    form.zip.data = current_user.zip
-    form.tanf.data = current_user.tanf
-    form.etic.data = current_user.etic
-    form.number_of_children.data = current_user.number_of_children
-    form.submit.label = Label('submit', 'Save Information')
-    logging.error(form.submit.__dict__)
+@account.route('/modules')
+@login_required
+def modules():
+    logging.error(str(current_user.modules))
+    return render_template('main/modules.html',
+                           modules={module.module_num:module for module in current_user.modules},
+                           num_modules=8)
 
+
+@account.route('/modules-update', methods=['GET', 'POST'])
+@login_required
+@csrf.exempt
+def modules_update():
+    module_data = json.loads(request.form['data'])
+    logging.error('here')
+    logging.error(str(module_data))
+    already_exists = False
+    for i in range(len(current_user.modules)):
+        module_num = current_user.modules[i].module_num
+        if module_data['module_num'] == module_num:
+            module = current_user.modules[i]
+            module.filename = module_data['filename']
+            module.certificate_url = module_data['certificate_url']
+            logging.error(module.certificate_url)
+            already_exists = True
+            break
+    if not already_exists:
+        module = Module(user_id=current_user.id, module_num=module_data['module_num'],
+                        filename=module_data['filename'], certificate_url=module_data['certificate_url'])
+        current_user.modules.append(module)
+    db.session.commit()
+    flash('Your progress has been updated.', 'success')
+    return jsonify({'status': 200})
+
+
+@account.route('/savings', methods=['GET', 'POST'])
+@login_required
+def savings():
+    form = SavingsStartEndForm()
     if form.validate_on_submit():
-        flash('Thank you!', 'success')
-        current_user.dob = form.dob.data
-        current_user.gender = form.gender.data
-        current_user.ethnicity = form.ethnicity.data
-        current_user.mobile_phone = form.mobile_phone.data
-        current_user.home_phone = form.home_phone.data
-        current_user.marital_status = form.marital_status.data
-        current_user.household_status = form.household_status.data
-        current_user.citizenship_status = form.citizenship_status.data
-        current_user.work_status = form.work_status.data
-        current_user.street = form.street.data
-        current_user.city = form.city.data
-        current_user.state = form.state.data
-        current_user.zip = form.zip.data
-        current_user.tanf = form.tanf.data
-        current_user.etic = form.etic.data
-        current_user.number_of_children = form.number_of_children.data
-
-        db.session.add(current_user)
-        db.session.commit()
-    else:
-        logging.error(str(form.errors))
-
-    return render_template('account/user-info.html', form=form)
+        error_flag = False
+        if form.start_date.data is not None and form.end_date.data is None:
+            if form.start_date.data >= form.end_date.data:
+                flash('The end date must be after the start date.', 'error')
+                error_flag = True
+        if not error_flag:
+            current_user.savings_start_date = form.start_date.data
+            current_user.savings_end_date = form.end_date.data
+            flash('Your start and end dates have been saved.', 'success')
+            db.session.commit()
+    if current_user.savings_start_date is not None:
+        form.start_date.data = current_user.savings_start_date
+    if current_user.savings_end_date is not None:
+        form.end_date.data = current_user.savings_end_date
+    weeks = None
+    if current_user.savings_start_date is not None and current_user.savings_end_date is not None:
+        startd = current_user.savings_start_date
+        endd = current_user.savings_end_date
+        monday1 = (startd-timedelta(days=startd.weekday()))
+        monday2 = (endd-timedelta(days=endd.weekday()))
+        num_weeks = (monday2-monday1).days/7
+        increment = current_user.goal_amount/float(num_weeks)
+        weeks = []
+        for i in range(num_weeks):
+            weeks.append(round(increment*(i+1), 2))
+    return render_template('main/savings.html', form=form, weeks=weeks)

@@ -1,19 +1,11 @@
-from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField,
-                            SubmitField)
-from wtforms.fields.html5 import EmailField, DateField
+from wtforms.fields import PasswordField, SubmitField
+from wtforms.fields.html5 import EmailField
 from wtforms.validators import Email, EqualTo, InputRequired, Length
 
 from ..models import User
 
-class SavingsStartEndForm(Form):
-    start_date = DateField(
-        'Start Date', validators=[])
-    end_date = DateField(
-        'End Date', validators=[])
-    submit = SubmitField('Save')
 
 class RequestResetPasswordForm(Form):
     email = EmailField(

@@ -1,0 +1,44 @@
+{% extends 'layouts/base.html' %}
+
+{% macro dashboard_option(title, endpoint, description=None, icon=None) %}
+    <a class="column" href="{{ url_for(endpoint) }}">
+        <div class="ui padded segment">
+            <h3 class="ui header">
+                {% if icon is not none %}
+                    <i class="{{ icon }}"></i>
+                {% endif %}
+                <div class="content">
+                    {{ title }}
+                    {% if description is not none %}
+                        <div class="sub header">
+                            {{ description }}
+                        </div>
+                    {% endif %}
+                </div>
+            </h3>
+        </div>
+    </a>
+{% endmacro %}
+
+{% block content %}
+    <div class="ui stackable centered grid container">
+        <div class="twelve wide column">
+            <h2 class="ui header">
+                Account Dashboard
+            </h2>
+            <div class="ui two column stackable grid">
+                {{ dashboard_option('Savings', 'account.savings',
+                                    description='View and Update Savings Progress', icon='tasks icon') }}
+                {{ dashboard_option('View Modules', 'account.modules',
+                                    description='View and update progress on modules', icon='tasks icon') }}
+                {% if not current_user.completed_forms %}
+                {{ dashboard_option('Applicant Information Form', 'account.applicant_info',
+                                    description='View and update progress on modules', icon='file icon') }}
+                {% else %}
+                {{ dashboard_option('Applicant Information Form Edit', 'account.applicant_info_edit',
+                                    description='View and update progress on modules', icon='edit icon') }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

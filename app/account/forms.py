@@ -99,11 +99,6 @@ class ChangeEmailForm(Form):
             raise ValidationError('Email already registered.')
 
 
-class ChangeLocationForm(Form):
-    location = StringField('location', validators=[InputRequired(), Length(1, 64)])
-    submit = SubmitField('Change Location')
-
-
 phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
                          message="Not a valid phone number. Try the format 111-111-1111")
 
@@ -134,3 +129,11 @@ class ApplicantInfoForm(Form):
         [InputRequired(), NumberRange(min=0, max=10)], default=0)
 
     submit = SubmitField('Submit')
+
+
+class SavingsStartEndForm(Form):
+    start_date = DateField(
+        'Start Date', validators=[])
+    end_date = DateField(
+        'End Date', validators=[])
+    submit = SubmitField('Save')
