@@ -9,8 +9,10 @@ from ..email import send_email
 from ..models import User
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm)
-
+                    ResetPasswordForm, ChangeLocationForm, ApplicantInfoForm)
+from wtforms.fields.core import Label
+import logging
+from datetime import datetime
 
 @account.route('/login', methods=['GET', 'POST'])
 def login():
@@ -271,3 +273,82 @@ def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
     return render_template('account/unconfirmed.html')
+
+
+@account.route('/manage/primary', methods=['GET', 'POST'])
+def user_info():
+    form = ApplicantInfoForm()
+    if form.validate_on_submit():
+        flash('Thank you!', 'success')
+        current_user.dob = form.dob.data
+        current_user.gender = form.gender.data
+        current_user.ethnicity = form.ethnicity.data
+        current_user.mobile_phone = form.mobile_phone.data
+        current_user.home_phone = form.home_phone.data
+        current_user.marital_status = form.marital_status.data
+        current_user.household_status = form.household_status.data
+        current_user.citizenship_status = form.citizenship_status.data
+        current_user.work_status = form.work_status.data
+        current_user.street = form.street.data
+        current_user.city = form.city.data
+        current_user.state = form.state.data
+        current_user.zip = form.zip.data
+        current_user.tanf = form.tanf.data
+        current_user.etic = form.etic.data
+        current_user.number_of_children = form.number_of_children.data
+
+        db.session.add(current_user)
+        db.session.commit()
+    else:
+        logging.error(str(form.errors))
+
+    return render_template('account/user-info.html', form=form)
+
+
+@account.route('/manage/primary-edit', methods=['GET', 'POST'])
+def user_info_edit():
+    form = ApplicantInfoForm()
+    form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
+    form.gender.data = current_user.gender
+    form.ethnicity.data = current_user.ethnicity
+    form.mobile_phone.data = current_user.mobile_phone
+    form.home_phone.data = current_user.home_phone
+    form.marital_status.data = current_user.marital_status
+    form.household_status.data = current_user.household_status
+    form.citizenship_status.data = current_user.citizenship_status
+    form.work_status.data = current_user.work_status
+    form.street.data = current_user.street
+    form.city.data = current_user.city
+    form.state.data = current_user.state
+    form.zip.data = current_user.zip
+    form.tanf.data = current_user.tanf
+    form.etic.data = current_user.etic
+    form.number_of_children.data = current_user.number_of_children
+    form.submit.label = Label('submit', 'Save Information')
+    logging.error(form.submit.__dict__)
+
+    if form.validate_on_submit():
+        flash('Thank you!', 'success')
+        current_user.dob = form.dob.data
+        current_user.gender = form.gender.data
+        current_user.ethnicity = form.ethnicity.data
+        current_user.mobile_phone = form.mobile_phone.data
+        current_user.home_phone = form.home_phone.data
+        current_user.marital_status = form.marital_status.data
+        current_user.household_status = form.household_status.data
+        current_user.citizenship_status = form.citizenship_status.data
+        current_user.work_status = form.work_status.data
+        current_user.street = form.street.data
+        current_user.city = form.city.data
+        current_user.state = form.state.data
+        current_user.zip = form.zip.data
+        current_user.tanf = form.tanf.data
+        current_user.etic = form.etic.data
+        current_user.number_of_children = form.number_of_children.data
+
+        db.session.add(current_user)
+        db.session.commit()
+    else:
+        logging.error(str(form.errors))
+
+    return render_template('account/user-info.html', form=form)

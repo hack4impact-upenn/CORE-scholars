@@ -67,6 +67,10 @@ local_settings.py
 instance/
 .webassets-cache
 
+webassets-external/
+
+.idea/
+
 # Scrapy stuff:
 .scrapy
 
@@ -86,7 +90,7 @@ target/
 celerybeat-schedule
 
 # dotenv
-.env
+*.env
 
 # SQLite
 data-dev.sqlite

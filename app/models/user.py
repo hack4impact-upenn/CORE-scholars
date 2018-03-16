@@ -20,6 +20,7 @@ class Role(db.Model):
     default = db.Column(db.Boolean, default=False, index=True)
     permissions = db.Column(db.Integer)
     users = db.relationship('User', backref='role', lazy='dynamic')
+    location = db.Column(db.String(64))
 
     @staticmethod
     def insert_roles():
@@ -44,6 +45,16 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role \'%s\'>' % self.name
 
+module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+ db.Column('module_num', db.Integer, db.ForeignKey('modules.module_num'))
+)
+
+class Module(db.Model):
+    __tablename__ = 'modules'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    certificate_url = db.Column(db.String(256), unique=True)
+    module_num = db.Column(db.Integer, index=True, primary_key=True)
+    filename = db.Column(db.String(256))
 
 class Transactions(db.Model):
     __tablename__ = 'transactions'
@@ -61,12 +72,31 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(64), index=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
+    location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    modules = db.Column(db.String(8))
+
+    dob = db.Column(db.String(64))
+    gender = db.Column(db.String(64))
+    ethnicity = db.Column(db.String(64))
+    mobile_phone = db.Column(db.String(64))
+    home_phone = db.Column(db.String(64))
+    marital_status = db.Column(db.String(64))
+    household_status = db.Column(db.String(64))
+    citizenship_status = db.Column(db.String(64))
+    work_status = db.Column(db.String(64))
+    street = db.Column(db.String(64))
+    city = db.Column(db.String(64))
+    state = db.Column(db.String(64))
+    zip = db.Column(db.String(64))
+    tanf = db.Column(db.String(64))
+    etic = db.Column(db.String(64))
+    number_of_children = db.Column(db.String(64))
+
     bank_balance = db.Column(db.Integer)
     savings_start_date = db.Column(db.Date)
     savings_end_date = db.Column(db.Date)
     goal_amount = db.Column(db.Integer)
+    modules = db.relationship('Module', secondary=module_associations)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -76,11 +106,6 @@ class User(UserMixin, db.Model):
                     permissions=Permission.ADMINISTER).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
-        num_modules = 8
-        module_str = ""
-        for _ in range(num_modules):
-            module_str += '0'
-        self.modules = module_str
         self.savings_start_date = None
         self.savings_end_date = None
         self.goal_amount = 500
@@ -153,6 +178,12 @@ class User(UserMixin, db.Model):
         if self.query.filter_by(email=new_email).first() is not None:
             return False
         self.email = new_email
+        db.session.add(self)
+        db.session.commit()
+        return True
+
+    def change_location(self, new_location):
+        self.location = new_location
         db.session.add(self)
         db.session.commit()
         return True
