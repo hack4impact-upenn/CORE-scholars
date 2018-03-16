@@ -277,12 +277,24 @@ def user_info():
     form = ApplicantInfoForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
-        print('dammit')
-        # print(form.ethnicity.data)
-        # print(form.ethnicity.__dict__)
-        print('ugh')
-    else:
-        print('what happened')
-        print(form.errors)
-        print(form.gender.data)
+        current_user.dob = form.dob.data
+        current_user.gender = form.gender.data
+        current_user.ethnicity = form.ethnicity.data
+        current_user.mobile_phone = form.mobile_phone.data
+        current_user.home_phone = form.home_phone.data
+        current_user.marital_status = form.marital_status.data
+        current_user.household_status = form.household_status.data
+        current_user.citizenship_status = form.citizenship_status.data
+        current_user.work_status = form.work_status.data
+        current_user.street = form.street.data
+        current_user.city = form.city.data
+        current_user.state = form.state.data
+        current_user.zip = form.zip.data
+        current_user.tanf = form.tanf.data
+        current_user.etic = form.etic.data
+        current_user.number_of_children = form.number_of_children.data
+
+        db.session.add(current_user)
+        db.session.commit()
+
     return render_template('account/user-info.html', form=form)
