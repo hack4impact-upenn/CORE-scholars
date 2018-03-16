@@ -1,0 +1,52 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
+{% import 'macros/check_password.html' as check %}
+
+{% block content %}
+    <div class="ui grid container">
+        <div class="eight wide computer sixteen wide mobile centered column">
+            <h2 class="ui dividing header">Create an account</h2>
+
+            {% set flashes = {
+                'error':   get_flashed_messages(category_filter=['form-error']),
+                'warning': get_flashed_messages(category_filter=['form-check-email']),
+                'info':    get_flashed_messages(category_filter=['form-info']),
+                'success': get_flashed_messages(category_filter=['form-success'])
+            } %}
+
+            {{ f.begin_form(form, flashes) }}
+
+            {{ f.render_form_field(form.start_date) }}
+            {{ f.render_form_field(form.end_date) }}
+
+            {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+            {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
+            {{ f.form_message(flashes['info'], header='Information', class='info') }}
+            {{ f.form_message(flashes['success'], header='Success!', class='success') }}
+
+            {% for field in form | selectattr('type', 'equalto', 'SubmitField') %}
+                {{ f.render_form_field(field) }}
+            {% endfor %}
+
+            {{ f.end_form(form) }}
+
+            {% if weeks is not none %}
+            <h2>Savings Timeline</h2>
+            <table style='border-collapse: collapse;'>
+                <tr>
+                    <th>Week Number</th>
+                    <th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                    <th>Goal Amount</th>
+                </tr>
+                {% for i in range(1, weeks|length +1) %}
+                <tr>
+                    <td>{{ i }}</td>
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                    <td>${{ weeks[i-1] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

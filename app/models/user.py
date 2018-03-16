@@ -45,6 +45,16 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role \'%s\'>' % self.name
 
+module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+ db.Column('module_num', db.Integer, db.ForeignKey('modules.module_num'))
+)
+
+class Module(db.Model):
+    __tablename__ = 'modules'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    certificate_url = db.Column(db.String(256), unique=True)
+    module_num = db.Column(db.Integer, index=True, primary_key=True)
+    filename = db.Column(db.String(256))
 
 class Transactions(db.Model):
     __tablename__ = 'transactions'
@@ -64,7 +74,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    modules = db.Column(db.String(8))
+
     dob = db.Column(db.String(64))
     gender = db.Column(db.String(64))
     ethnicity = db.Column(db.String(64))
@@ -82,6 +92,11 @@ class User(UserMixin, db.Model):
     etic = db.Column(db.String(64))
     number_of_children = db.Column(db.String(64))
 
+    bank_balance = db.Column(db.Integer)
+    savings_start_date = db.Column(db.Date)
+    savings_end_date = db.Column(db.Date)
+    goal_amount = db.Column(db.Integer)
+    modules = db.relationship('Module', secondary=module_associations)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -91,11 +106,9 @@ class User(UserMixin, db.Model):
                     permissions=Permission.ADMINISTER).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
-        num_modules = 8
-        module_str = ""
-        for _ in range(num_modules):
-            module_str += '0'
-        self.modules = module_str
+        self.savings_start_date = None
+        self.savings_end_date = None
+        self.goal_amount = 500
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
