@@ -2,7 +2,7 @@ from flask_wtf import Form
 from wtforms import ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.fields import PasswordField, StringField, SubmitField
-from wtforms.fields.html5 import EmailField
+from wtforms.fields.html5 import EmailField, DateField
 from wtforms.validators import Email, EqualTo, InputRequired, Length
 
 from .. import db
@@ -40,6 +40,8 @@ class InviteUserForm(Form):
         'Last name', validators=[InputRequired(), Length(1, 64)])
     email = EmailField(
         'Email', validators=[InputRequired(), Length(1, 64), Email()])
+    bank_acct_open = DateField(
+        'Bank Account Open Date', format='%Y-%m-%d', validators=[InputRequired()])
     submit = SubmitField('Invite')
 
     def validate_email(self, field):

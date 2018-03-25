@@ -50,7 +50,8 @@ def invite_user():
             role=form.role.data,
             first_name=form.first_name.data,
             last_name=form.last_name.data,
-            email=form.email.data)
+            email=form.email.data,
+            bank_acct_open=form.bank_acct_open.data)
         db.session.add(user)
         db.session.commit()
         token = user.generate_confirmation_token()
