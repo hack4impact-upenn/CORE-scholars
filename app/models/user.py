@@ -6,6 +6,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .. import db, login_manager
 
+import random
+
 
 class Permission:
     GENERAL = 0x01
@@ -220,7 +222,7 @@ class User(UserMixin, db.Model):
                 last_name=fake.last_name(),
                 email=fake.email(),
                 password='password',
-                confirmed=True,
+                confirmed=bool(random.getrandbits(1)),
                 role=choice(roles),
                 **kwargs)
             db.session.add(u)
