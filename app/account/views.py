@@ -15,9 +15,10 @@ import logging
 from datetime import datetime, timedelta
 import json
 
-
 @account.route('/')
+@login_required
 def index():
+    print(current_user.is_authenticated)
     return render_template('account/index.html')
 
 
@@ -63,7 +64,6 @@ def register():
         return redirect(url_for('main.index'))
     return render_template('account/register.html', form=form)
 
-
 @account.route('/logout')
 @login_required
 def logout():
@@ -81,6 +81,7 @@ def manage():
 
 
 @account.route('/reset-password', methods=['GET', 'POST'])
+@login_required
 def reset_password_request():
     """Respond to existing user's request to reset their password."""
     if not current_user.is_anonymous:
@@ -107,6 +108,7 @@ def reset_password_request():
 
 
 @account.route('/reset-password/<token>', methods=['GET', 'POST'])
+@login_required
 def reset_password(token):
     """Reset an existing user's password."""
     if not current_user.is_anonymous:
@@ -269,8 +271,9 @@ def before_request():
     """Force user to confirm email before accessing login-required routes."""
     if current_user.is_authenticated \
             and not current_user.confirmed \
-            and request.endpoint[:8] != 'account.' \
-            and request.endpoint != 'static':
+            and request.endpoint != 'static' \
+            and request.endpoint != 'account.unconfirmed' \
+            and request.endpoint != 'account.logout':
         return redirect(url_for('account.unconfirmed'))
 
 
@@ -283,6 +286,7 @@ def unconfirmed():
 
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
+@login_required
 def applicant_info():
     form = ApplicantInfoForm()
     if form.validate_on_submit():
@@ -315,6 +319,7 @@ def applicant_info():
 
 
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
+@login_required
 def applicant_info_edit():
     form = ApplicantInfoForm()
     current_user.id
