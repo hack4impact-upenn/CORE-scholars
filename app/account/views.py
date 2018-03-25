@@ -14,9 +14,13 @@ from wtforms.fields.core import Label
 import logging
 from datetime import datetime, timedelta
 import json
+import os
+import time
+import boto3
 
 
 @account.route('/')
+@login_required
 def index():
     return render_template('account/index.html')
 
@@ -264,30 +268,13 @@ def join_from_invite(user_id, token):
     return redirect(url_for('main.index'))
 
 
-@account.before_app_request
-def before_request():
-    """Force user to confirm email before accessing login-required routes."""
-    if current_user.is_authenticated \
-            and not current_user.confirmed \
-            and request.endpoint[:8] != 'account.' \
-            and request.endpoint != 'static':
-        return redirect(url_for('account.unconfirmed'))
-
-
-@account.route('/unconfirmed')
-def unconfirmed():
-    """Catch users with unconfirmed emails."""
-    if current_user.is_anonymous or current_user.confirmed:
-        return redirect(url_for('main.index'))
-    return render_template('account/unconfirmed.html')
-
-
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
+@login_required
 def applicant_info():
     form = ApplicantInfoForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
-        current_user.dob = form.dob.data
+        current_user['dob'] = form['dob'].data
         current_user.gender = form.gender.data
         current_user.ethnicity = form.ethnicity.data
         current_user.mobile_phone = form.mobile_phone.data
@@ -315,6 +302,7 @@ def applicant_info():
 
 
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
+@login_required
 def applicant_info_edit():
     form = ApplicantInfoForm()
     current_user.id
@@ -369,7 +357,7 @@ def applicant_info_edit():
 @login_required
 def modules():
     logging.error(str(current_user.modules))
-    return render_template('main/modules.html',
+    return render_template('account/modules.html',
                            modules={module.module_num:module for module in current_user.modules},
                            num_modules=8)
 
@@ -428,6 +416,58 @@ def savings():
         num_weeks = (monday2-monday1).days/7
         increment = current_user.goal_amount/float(num_weeks)
         weeks = []
-        for i in range(num_weeks):
+        for i in range(int(num_weeks)):
             weeks.append(round(increment*(i+1), 2))
-    return render_template('main/savings.html', form=form, weeks=weeks)
+    return render_template('account/savings.html', form=form, weeks=weeks)
+
+
+@account.before_app_request
+def before_request():
+    """Force user to confirm email before accessing login-required routes."""
+    if current_user.is_authenticated \
+            and not current_user.confirmed \
+            and request.endpoint[:8] != 'account.' \
+            and request.endpoint != 'static':
+        return redirect(url_for('account.unconfirmed'))
+
+
+@account.route('/unconfirmed')
+def unconfirmed():
+    """Catch users with unconfirmed emails."""
+    if current_user.is_anonymous:
+        return redirect(url_for('main.index'))
+    return render_template('account/unconfirmed.html')
+
+
+@account.route('/sign-s3/')
+def sign_s3():
+    # Load necessary information into the application
+    S3_BUCKET = os.environ.get('S3_BUCKET')
+    S3_REGION = os.environ.get('S3_REGION')
+    TARGET_FOLDER = 'json/'
+    # Load required data from the request
+    pre_file_name = request.args.get('file-name')
+    file_name = ''.join(pre_file_name.split('.')[:-1]) + str(time.time()).replace('.','-') + '.' + ''.join(pre_file_name.split('.')[-1:])
+    file_type = request.args.get('file-type')
+
+    # Initialise the S3 client
+    s3 = boto3.client('s3', 'us-west-2')
+
+    # Generate and return the presigned URL
+    presigned_post = s3.generate_presigned_post(
+            Bucket = S3_BUCKET,
+            Key = TARGET_FOLDER + file_name,
+            Fields = {"acl": "public-read", "Content-Type": file_type},
+            Conditions = [
+                {"acl": "public-read"},
+                {"Content-Type": file_type}
+                ],
+            ExpiresIn = 6000
+            )
+
+    # Return the data to the client
+    return json.dumps({
+        'data': presigned_post,
+        'url_upload': 'https://%s.%s.amazonaws.com' % (S3_BUCKET, S3_REGION),
+        'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
+        })

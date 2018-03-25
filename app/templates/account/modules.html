@@ -75,7 +75,7 @@ function handleFunc(url, fieldName) {
  */
 function getSignedRequest(file, fieldName){
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', `/sign-s3?file-name=${file.name}&file-type=${file.type}`);
+  xhr.open('GET', `/account/sign-s3?file-name=${file.name}&file-type=${file.type}`);
   xhr.onreadystatechange = function() {
     if(xhr.readyState === 4){
       if(xhr.status === 200){
@@ -98,7 +98,7 @@ function progressUpdate(url, filename, field) {
     module_map["filename"] = filename
     $.ajax({
         type: 'POST',
-        url: "{{ url_for('main.modules_update') }}",
+        url: "{{ url_for('account.modules_update') }}",
         data: {data: JSON.stringify(module_map)},
         dataType: 'json',
         success: function(data, textStatus) {
