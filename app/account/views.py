@@ -7,9 +7,9 @@ from . import account
 from .. import db, csrf
 from ..email import send_email
 from ..models import User, Module
-from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
-                    LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm)
+from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm, LoginForm, RegistrationForm,
+                    RequestResetPasswordForm, ResetPasswordForm, ApplicantProfileForm, SavingsStartEndForm,
+                    EducationProfileForm)
 from wtforms.fields.core import Label
 import logging
 from datetime import datetime, timedelta
@@ -290,8 +290,8 @@ def unconfirmed():
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
 @login_required
-def applicant_info():
-    form = ApplicantInfoForm()
+def applicant_profile():
+    form = ApplicantProfileForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
         current_user['dob'] = form['dob'].data
@@ -318,13 +318,13 @@ def applicant_info():
     else:
         logging.error(str(form.errors))
 
-    return render_template('account/user-info.html', form=form)
+    return render_template('account/applicant_form.html', form=form)
 
 
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
 @login_required
-def applicant_info_edit():
-    form = ApplicantInfoForm()
+def applicant_profile_edit():
+    form = ApplicantProfileForm()
     current_user.id
     if current_user.completed_forms:
         form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
@@ -370,7 +370,19 @@ def applicant_info_edit():
     else:
         logging.error(str(form.errors))
 
-    return render_template('account/user-info.html', form=form)
+    return render_template('account/applicant_form.html', form=form)
+
+
+@account.route('/manage/education-information', methods=['GET', 'POST'])
+@login_required
+def education_profile():
+    form = EducationProfileForm()
+    if form.validate_on_submit():
+        return redirect(url_for('account.index'))
+    else:
+        logging.error(str(form.errors))
+
+    return render_template('account/education_form.html', form=form)
 
 
 @account.route('/modules')

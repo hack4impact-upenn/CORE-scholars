@@ -1,12 +1,14 @@
 from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField, SubmitField, IntegerField, SubmitField, Field)
+from wtforms.fields import (BooleanField, PasswordField, StringField, SelectField, IntegerField, SubmitField,
+                            TextAreaField)
 from wtforms.fields.html5 import EmailField, DateField, TelField, IntegerField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp, NumberRange
 from ..utils import CustomSelectField
-
 from ..models import User
+
+import datetime
 
 
 class LoginForm(Form):
@@ -102,8 +104,11 @@ class ChangeEmailForm(Form):
 phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
                          message="Not a valid phone number. Try the format 111-111-1111")
 
+year_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
+                         message="Not a valid phone number. Try the format 111-111-1111")
 
-class ApplicantInfoForm(Form):
+
+class ApplicantProfileForm(Form):
     dob = DateField('Date of Birth', format='%Y-%m-%d', validators=[InputRequired()])
     gender = CustomSelectField('Gender', validators=[InputRequired(), Length(1, 64)], choices=
         ['Male', 'Female', 'Trans', 'Non-binary', 'Bigender'], multiple=True)
@@ -128,6 +133,27 @@ class ApplicantInfoForm(Form):
     number_of_children = IntegerField('Number of Children', validators=
         [InputRequired(), NumberRange(min=0, max=10)], default=0)
 
+    submit = SubmitField('Submit')
+
+
+current_year = datetime.datetime.now().year
+
+
+class EducationProfileForm(Form):
+    current_education = SelectField('Education Status', choices=[('high-school', 'Student in High School'),
+                                                                 ('college', 'Student in College'),
+                                                                 ('N/A', 'Not a Student')])
+    education_background = TextAreaField('What is your education background?')
+    high_school_name = StringField('High School Name', validators=[Length(1, 64)])
+    college_bound = SelectField('Have you been accepted to an accredited 2 or 4 year degree program '
+                                '(Associates or Bachelors), technical school, or vocational school?',
+                                choices=[('Has not applied', 'No, I have not yet applied'),
+                                         ('Waiting on acceptances / deciding',
+                                          'No, I am still waiting on acceptances or deciding'),
+                                         ('Yes', 'Yes')])
+    school_name = StringField('School Name', validators=[Length(1, 64)])
+    graduation_year = IntegerField('Graduation Year', validators=
+        [NumberRange(min=current_year, max=current_year+8)], default=current_year+4)
     submit = SubmitField('Submit')
 
 
