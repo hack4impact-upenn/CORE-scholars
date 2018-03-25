@@ -96,6 +96,7 @@ class User(UserMixin, db.Model):
     completed_forms = db.Column(db.Boolean, default=False)
 
     bank_balance = db.Column(db.Integer)
+    bank_acct_open = db.Column(db.Date)
     savings_start_date = db.Column(db.Date)
     savings_end_date = db.Column(db.Date)
     goal_amount = db.Column(db.Integer)
