@@ -1,12 +1,13 @@
 from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField, SubmitField, IntegerField, SubmitField, Field)
+from wtforms.fields import (BooleanField, PasswordField, StringField, SubmitField, 
+    IntegerField, SubmitField, Field, FloatField, SelectField)
 from wtforms.fields.html5 import EmailField, DateField, TelField, IntegerField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp, NumberRange
 from ..utils import CustomSelectField
 
-from ..models import User
+from ..models import User, SavingsHistory
 
 
 class LoginForm(Form):
@@ -137,3 +138,11 @@ class SavingsStartEndForm(Form):
     end_date = DateField(
         'End Date', validators=[])
     submit = SubmitField('Save')
+
+class SavingsHistoryForm(Form):
+    date = DateField('Date Added', format='%Y-%m-%d') 
+    balance = IntegerField('Balance')
+    submit = SubmitField('Update Balance')
+
+    def __repr__(self):
+        return '<SavingsHistory {}, {}>'.format(self.date, self.balance)

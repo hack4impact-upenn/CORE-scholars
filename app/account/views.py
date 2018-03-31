@@ -6,10 +6,10 @@ from flask_rq import get_queue
 from . import account
 from .. import db, csrf
 from ..email import send_email
-from ..models import User, Module
+from ..models import User, Module, SavingsHistory
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm)
+                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, SavingsHistoryForm)
 from wtforms.fields.core import Label
 import logging
 from datetime import datetime, timedelta
@@ -419,6 +419,29 @@ def savings():
         for i in range(int(num_weeks)):
             weeks.append(round(increment*(i+1), 2))
     return render_template('account/savings.html', form=form, weeks=weeks)
+
+@account.route('/savingsHistory/', methods = ['GET', 'POST'])
+def savings_history():
+    
+    form = SavingsHistoryForm()
+
+    if form.validate_on_submit():
+        savings = SavingsHistory(date=form.date.data, balance = form.balance.data, user_id=current_user.id)
+        db.session.add(savings)
+        db.session.commit()
+
+    student_profile = SavingsHistory.query.filter_by(user_id=current_user.id).all()
+    balance_array = []
+    date_added = []
+    
+    if(student_profile is not None):
+        for i in range(len(student_profile)):
+            balance_array.append(student_profile[i].balance)
+            date_added.append(student_profile[i].date)
+
+    return render_template('account/savings_history.html', form = form, 
+        balance = balance_array, date = date_added, 
+    lenBalance = len(balance_array), lenDate = len(date_added))
 
 
 @account.before_app_request
