@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for, jsonify
+from flask import flash, redirect, render_template, request, url_for, jsonify, current_app
 from flask_login import (current_user, login_required, login_user,
                          logout_user)
 from flask_rq import get_queue
@@ -17,6 +17,7 @@ import json
 import os
 import time
 import boto3
+import random
 
 @account.route('/')
 @login_required
@@ -287,6 +288,10 @@ def unconfirmed():
         return redirect(url_for('main.index'))
     return render_template('account/unconfirmed.html')
 
+def random_with_N_digits(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return randint(range_start, range_end)
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
 @login_required
@@ -312,6 +317,13 @@ def applicant_info():
         current_user.number_of_children = form.number_of_children.data
         current_user.completed_forms = True
 
+        client = Client(current_app.config["TWILIO_ACCOUNT_SID"], current_app.config["TWILIO_AUTH_TOKEN"])
+
+        client.api.account.messages.create(
+            to=current_user.mobile_phone,
+            from_=current_app.CONFIG["TWILIO_PHONE_NUMBER"],
+            body="Your verification code is " + str(random_with_N_digits(5)))
+
         db.session.add(current_user)
         db.session.commit()
         return redirect(url_for('account.index'))
@@ -319,6 +331,11 @@ def applicant_info():
         logging.error(str(form.errors))
 
     return render_template('account/user-info.html', form=form)
+
+@account.route('/manage/verify-phone', methods=['GET', 'POST'])
+@login_required
+def verify():
+    
 
 
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
