@@ -11,6 +11,8 @@ from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
                     ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, VerifyPhoneNumberForm)
 from wtforms.fields.core import Label
+from twilio.rest import Client
+
 import logging
 from datetime import datetime, timedelta
 import json
@@ -291,7 +293,7 @@ def unconfirmed():
 def random_with_N_digits(n):
     range_start = 10**(n-1)
     range_end = (10**n)-1
-    return randint(range_start, range_end)
+    return random.randint(range_start, range_end)
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
 @login_required
@@ -299,7 +301,7 @@ def applicant_info():
     form = ApplicantInfoForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
-        current_user['dob'] = form['dob'].data
+        current_user.dob = form.dob.data
         current_user.gender = form.gender.data
         current_user.ethnicity = form.ethnicity.data
         current_user.mobile_phone = form.mobile_phone.data
@@ -324,7 +326,7 @@ def applicant_info():
 
         client.api.account.messages.create(
             to=form.mobile_phone.data,
-            from_=current_app.CONFIG["TWILIO_PHONE_NUMBER"],
+            from_=current_app.config["TWILIO_PHONE_NUMBER"],
             body="Your verification code is " + str(verification_code))
 
         db.session.add(state)
@@ -341,15 +343,18 @@ def applicant_info():
 def verify():
     form = VerifyPhoneNumberForm()
     if form.validate_on_submit():
-        state = PhoneNumberState.query.filter_by(user_id=current_user.id)
+        state = PhoneNumberState.query.filter_by(user_id=current_user.id).first()
         if str(state.verification_code) == form.code.data:
             flash('Your phone number has been verified.', 'success')
             current_user.mobile_phone = state.phone_number
-        db.session.delete(state)
-        db.session.commit()
-
-        return redirect(url_for('account.index'))
-
+            db.session.delete(state)
+            db.session.commit()
+            return redirect(url_for('account.index'))
+        else:
+            flash('Incorrect verification code', 'error')
+            db.session.delete(state)
+            db.session.commit()
+            return redirect(url_for('account.applicant_info'))
     return render_template('account/verify.html', form=form)
 
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])

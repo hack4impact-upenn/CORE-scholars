@@ -15,7 +15,7 @@ class EditableHTML(db.Model):
             editable_html_obj = EditableHTML(editor_name=editor_name, value='')
         return editable_html_obj
 
-class PhoneNumberState(db.Model)
-    user_id = db.Column(db.Intger, primary_key=True)
+class PhoneNumberState(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
     phone_number = db.Column(db.String)
     verification_code = db.Column(db.Integer)
