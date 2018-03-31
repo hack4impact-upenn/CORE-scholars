@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for, jsonify
+from flask import flash, redirect, render_template, request, url_for, jsonify, current_app
 from flask_login import (current_user, login_required, login_user,
                          logout_user)
 from flask_rq import get_queue
