@@ -438,7 +438,7 @@ def savings():
         weeks = []
         for i in range(int(num_weeks)):
             weeks.append(round(increment*(i+1), 2))
-    return render_template('main/savings.html', form=form, weeks=weeks)
+    return render_template('account/savings.html', form=form, weeks=weeks)
 
 
 @account.route('/sign-s3/')
