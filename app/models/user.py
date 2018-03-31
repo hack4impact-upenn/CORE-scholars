@@ -6,6 +6,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .. import db, login_manager
 
+import random
+
 
 class Permission:
     GENERAL = 0x01
@@ -94,6 +96,7 @@ class User(UserMixin, db.Model):
     completed_forms = db.Column(db.Boolean, default=False)
 
     bank_balance = db.Column(db.Integer)
+    bank_acct_open = db.Column(db.Date)
     savings_start_date = db.Column(db.Date)
     savings_end_date = db.Column(db.Date)
     goal_amount = db.Column(db.Integer)
@@ -220,7 +223,7 @@ class User(UserMixin, db.Model):
                 last_name=fake.last_name(),
                 email=fake.email(),
                 password='password',
-                confirmed=True,
+                confirmed=bool(random.getrandbits(1)),
                 role=choice(roles),
                 **kwargs)
             db.session.add(u)

@@ -18,10 +18,10 @@ import os
 import time
 import boto3
 
-
 @account.route('/')
 @login_required
 def index():
+    print(current_user.is_authenticated)
     return render_template('account/index.html')
 
 
@@ -67,7 +67,6 @@ def register():
         return redirect(url_for('main.index'))
     return render_template('account/register.html', form=form)
 
-
 @account.route('/logout')
 @login_required
 def logout():
@@ -85,6 +84,7 @@ def manage():
 
 
 @account.route('/reset-password', methods=['GET', 'POST'])
+@login_required
 def reset_password_request():
     """Respond to existing user's request to reset their password."""
     if not current_user.is_anonymous:
@@ -111,6 +111,7 @@ def reset_password_request():
 
 
 @account.route('/reset-password/<token>', methods=['GET', 'POST'])
+@login_required
 def reset_password(token):
     """Reset an existing user's password."""
     if not current_user.is_anonymous:
@@ -266,6 +267,25 @@ def join_from_invite(user_id, token):
             user=new_user,
             invite_link=invite_link)
     return redirect(url_for('main.index'))
+
+
+@account.before_app_request
+def before_request():
+    """Force user to confirm email before accessing login-required routes."""
+    if current_user.is_authenticated \
+            and not current_user.confirmed \
+            and request.endpoint != 'static' \
+            and request.endpoint != 'account.unconfirmed' \
+            and request.endpoint != 'account.logout':
+        return redirect(url_for('account.unconfirmed'))
+
+
+@account.route('/unconfirmed')
+def unconfirmed():
+    """Catch users with unconfirmed emails."""
+    if current_user.is_anonymous or current_user.confirmed:
+        return redirect(url_for('main.index'))
+    return render_template('account/unconfirmed.html')
 
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
@@ -444,25 +464,8 @@ def savings_history():
     lenBalance = len(balance_array), lenDate = len(date_added))
 
 
-@account.before_app_request
-def before_request():
-    """Force user to confirm email before accessing login-required routes."""
-    if current_user.is_authenticated \
-            and not current_user.confirmed \
-            and request.endpoint[:8] != 'account.' \
-            and request.endpoint != 'static':
-        return redirect(url_for('account.unconfirmed'))
-
-
-@account.route('/unconfirmed')
-def unconfirmed():
-    """Catch users with unconfirmed emails."""
-    if current_user.is_anonymous:
-        return redirect(url_for('main.index'))
-    return render_template('account/unconfirmed.html')
-
-
 @account.route('/sign-s3/')
+@login_required
 def sign_s3():
     # Load necessary information into the application
     S3_BUCKET = os.environ.get('S3_BUCKET')
