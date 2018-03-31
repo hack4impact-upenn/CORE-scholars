@@ -39,6 +39,11 @@ class RegistrationForm(Form):
                                   .format(url_for('account.login')))
 
 
+class VerifyPhoneNumberForm(Form):
+    code = StringField('Verification code', validators=[InputRequired()])
+    submit = SubmitField('Submit')
+
+
 class RequestResetPasswordForm(Form):
     email = EmailField(
         'Email', validators=[InputRequired(), Length(1, 64), Email()])
