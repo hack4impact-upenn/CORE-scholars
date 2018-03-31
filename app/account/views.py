@@ -6,7 +6,7 @@ from flask_rq import get_queue
 from . import account
 from .. import db, csrf
 from ..email import send_email
-from ..models import User, Module, SavingsHistory
+from ..models import User, Module, SavingsHistory, EditableHTML
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
                     ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, SavingsHistoryForm)
@@ -496,4 +496,11 @@ def sign_s3():
         'data': presigned_post,
         'url_upload': 'https://%s.%s.amazonaws.com' % (S3_BUCKET, S3_REGION),
         'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
-        })
+    })
+
+@account.route('/resources')
+@login_required
+def resources():
+    editable_html_obj = EditableHTML.get_editable_html('resources')
+    return render_template('account/resources.html',
+                           editable_html_obj=editable_html_obj)      
