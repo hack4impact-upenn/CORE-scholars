@@ -6,10 +6,10 @@ from flask_rq import get_queue
 from . import account
 from .. import db, csrf
 from ..email import send_email
-from ..models import User, Module
+from ..models import User, Module, PhoneNumberState
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm)
+                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, VerifyPhoneNumberForm)
 from wtforms.fields.core import Label
 import logging
 from datetime import datetime, timedelta
@@ -17,6 +17,7 @@ import json
 import os
 import time
 import boto3
+import random
 
 @account.route('/')
 @login_required
@@ -287,6 +288,10 @@ def unconfirmed():
         return redirect(url_for('main.index'))
     return render_template('account/unconfirmed.html')
 
+def random_with_N_digits(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return randint(range_start, range_end)
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
 @login_required
@@ -312,14 +317,40 @@ def applicant_info():
         current_user.number_of_children = form.number_of_children.data
         current_user.completed_forms = True
 
+        verification_code = random_with_N_digits(5)
+
+        client = Client(current_app.config["TWILIO_ACCOUNT_SID"], current_app.config["TWILIO_AUTH_TOKEN"])
+        state = PhoneNumberState(user_id = current_user.id, phone_number = form.mobile_phone.data, verification_code = verification_code)
+
+        client.api.account.messages.create(
+            to=form.mobile_phone.data,
+            from_=current_app.CONFIG["TWILIO_PHONE_NUMBER"],
+            body="Your verification code is " + str(verification_code))
+
+        db.session.add(state)
         db.session.add(current_user)
         db.session.commit()
-        return redirect(url_for('account.index'))
+        return redirect(url_for('account.verify'))
     else:
         logging.error(str(form.errors))
 
     return render_template('account/user-info.html', form=form)
 
+@account.route('/manage/verify-phone', methods=['GET', 'POST'])
+@login_required
+def verify():
+    form = VerifyPhoneNumberForm()
+    if form.validate_on_submit():
+        state = PhoneNumberState.query.filter_by(user_id=current_user.id)
+        if str(state.verification_code) == form.code.data:
+            flash('Your phone number has been verified.', 'success')
+            current_user.mobile_phone = state.phone_number
+        db.session.delete(state)
+        db.session.commit()
+
+        return redirect(url_for('account.index'))
+
+    return render_template('account/verify.html', form=form)
 
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
 @login_required
@@ -438,7 +469,7 @@ def savings():
         weeks = []
         for i in range(int(num_weeks)):
             weeks.append(round(increment*(i+1), 2))
-    return render_template('main/savings.html', form=form, weeks=weeks)
+    return render_template('account/savings.html', form=form, weeks=weeks)
 
 
 @account.route('/sign-s3/')
