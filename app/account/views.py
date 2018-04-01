@@ -380,7 +380,10 @@ def education_profile():
     if form.validate_on_submit():
         return redirect(url_for('account.index'))
     else:
-        logging.error(str(form.errors))
+        if 'high_school_name' in form.errors and form.current_education.data == 'college':
+            return redirect(url_for('account.index'))
+
+        logging.error(str())
 
     return render_template('account/education_form.html', form=form)
 
@@ -450,7 +453,7 @@ def savings():
         weeks = []
         for i in range(int(num_weeks)):
             weeks.append(round(increment*(i+1), 2))
-    return render_template('main/savings.html', form=form, weeks=weeks)
+    return render_template('account/savings.html', form=form, weeks=weeks)
 
 
 @account.route('/sign-s3/')

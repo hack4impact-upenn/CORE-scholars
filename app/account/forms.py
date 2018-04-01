@@ -140,18 +140,12 @@ current_year = datetime.datetime.now().year
 
 
 class EducationProfileForm(Form):
-    current_education = SelectField('Education Status', choices=[('high-school', 'Student in High School'),
-                                                                 ('college', 'Student in College'),
-                                                                 ('N/A', 'Not a Student')])
-    education_background = TextAreaField('What is your education background?')
+    current_education = SelectField('Education Status', choices=[('high-school', 'Graduating High School Senior'),
+        ('college', 'Current or Accepted College, Technical School or Vocational School Student')])
+
     high_school_name = StringField('High School Name', validators=[Length(1, 64)])
-    college_bound = SelectField('Have you been accepted to an accredited 2 or 4 year degree program '
-                                '(Associates or Bachelors), technical school, or vocational school?',
-                                choices=[('Has not applied', 'No, I have not yet applied'),
-                                         ('Waiting on acceptances / deciding',
-                                          'No, I am still waiting on acceptances or deciding'),
-                                         ('Yes', 'Yes')])
-    school_name = StringField('School Name', validators=[Length(1, 64)])
+    college_name = StringField('College or School Name', validators=[Length(1, 64)])
+    degree_program = StringField('Name of Degree Program', validators=[Length(1, 128)])
     graduation_year = IntegerField('Graduation Year', validators=
         [NumberRange(min=current_year, max=current_year+8)], default=current_year+4)
     submit = SubmitField('Submit')

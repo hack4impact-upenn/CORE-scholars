@@ -13,12 +13,11 @@
             } %}
 
             {{ f.begin_form(form, flashes) }}
-                {{ f.render_form_field(form.current_education) }}
-                {{ f.render_form_field(form.education_background) }}
-                {{ f.render_form_field(form.high_school_name) }}
-                {{ f.render_form_field(form.college_bound) }}
-                {{ f.render_form_field(form.school_name) }}
-                {{ f.render_form_field(form.graduation_year) }}
+                {{ f.render_form_field(form.current_education, extra_classes='required') }}
+                {{ f.render_form_field(form.high_school_name, extra_classes='required') }}
+                {{ f.render_form_field(form.college_name, extra_classes='required') }}
+                {{ f.render_form_field(form.degree_program, extra_classes='required') }}
+                {{ f.render_form_field(form.graduation_year, extra_classes='required') }}
 
                 {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
                 {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
@@ -29,15 +28,14 @@
             {{ f.end_form(form) }}
 
             <script type="text/javascript">
-            jQuery(document).ready(function() {
-              $("#curent_education").change(function() {
-                if(this.checked) {
-                    $('#dates').show();
+            $("#current_education").parent().change(function() {
+                var selected = $(this).find(":selected").val();
+                if (selected == 'high-school') {
+                    $('#high_school_name').parent().show()
                 } else {
-                  $('#dates').hide();
+                    $('#high_school_name').parent().hide()
                 }
-              });
-            });
+            })
             </script>
         </div>
     </div>
