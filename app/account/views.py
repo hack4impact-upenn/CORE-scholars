@@ -533,7 +533,6 @@ def sign_s3():
         'url_upload': 'https://%s.%s.amazonaws.com' % (S3_BUCKET, S3_REGION),
         'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
         })
-    })
 
 @account.route('/resources')
 @login_required
