@@ -6,10 +6,10 @@ from flask_rq import get_queue
 from . import account
 from .. import db, csrf
 from ..email import send_email
-from ..models import User, Module, PhoneNumberState
+from ..models import User, Module, SavingsHistory, EditableHTML, PhoneNumberState
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, VerifyPhoneNumberForm)
+                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, SavingsHistoryForm, VerifyPhoneNumberForm)
 from wtforms.fields.core import Label
 from twilio.rest import Client
 
@@ -476,6 +476,29 @@ def savings():
             weeks.append(round(increment*(i+1), 2))
     return render_template('account/savings.html', form=form, weeks=weeks)
 
+@account.route('/savingsHistory/', methods = ['GET', 'POST'])
+def savings_history():
+    
+    form = SavingsHistoryForm()
+
+    if form.validate_on_submit():
+        savings = SavingsHistory(date=form.date.data, balance = form.balance.data, user_id=current_user.id)
+        db.session.add(savings)
+        db.session.commit()
+
+    student_profile = SavingsHistory.query.filter_by(user_id=current_user.id).all()
+    balance_array = []
+    date_added = []
+    
+    if(student_profile is not None):
+        for i in range(len(student_profile)):
+            balance_array.append(student_profile[i].balance)
+            date_added.append(student_profile[i].date)
+
+    return render_template('account/savings_history.html', form = form, 
+        balance = balance_array, date = date_added, 
+    lenBalance = len(balance_array), lenDate = len(date_added))
+
 
 @account.route('/sign-s3/')
 @login_required
@@ -510,3 +533,12 @@ def sign_s3():
         'url_upload': 'https://%s.%s.amazonaws.com' % (S3_BUCKET, S3_REGION),
         'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
         })
+    })
+
+@account.route('/resources')
+@login_required
+def resources():
+    editable_html_obj = EditableHTML.get_editable_html('resources')
+    return render_template('account/resources.html',
+                           editable_html_obj=editable_html_obj)      
+
