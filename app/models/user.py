@@ -80,6 +80,8 @@ class User(UserMixin, db.Model):
     dob = db.Column(db.String(64))
     gender = db.Column(db.String(64))
     ethnicity = db.Column(db.String(64))
+    lgbtq = db.Column(db.String(64))
+    social_media = db.Column(db.String(360))
     mobile_phone = db.Column(db.String(64))
     home_phone = db.Column(db.String(64))
     marital_status = db.Column(db.String(64))

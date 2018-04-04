@@ -366,6 +366,8 @@ def applicant_info_edit():
         form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
         form.gender.data = current_user.gender
         form.ethnicity.data = current_user.ethnicity
+        form.lgbtq.data = current_user.lgbtq
+        form.social_media.data = current_user.social_media
         form.mobile_phone.data = current_user.mobile_phone
         form.home_phone.data = current_user.home_phone
         form.marital_status.data = current_user.marital_status
@@ -386,6 +388,8 @@ def applicant_info_edit():
         current_user.dob = form.dob.data
         current_user.gender = form.gender.data
         current_user.ethnicity = form.ethnicity.data
+        current_user.lgbtq = form.lgbtq.data
+        current_user.social_media = form.social_media.data
         current_user.mobile_phone = form.mobile_phone.data
         current_user.home_phone = form.home_phone.data
         current_user.marital_status = form.marital_status.data
