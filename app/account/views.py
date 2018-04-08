@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, request, url_for, jsonify
+from flask import flash, redirect, render_template, request, url_for, jsonify, current_app
 from flask_login import (current_user, login_required, login_user,
                          logout_user)
 from flask_rq import get_queue
@@ -6,17 +6,24 @@ from flask_rq import get_queue
 from . import account
 from .. import db, csrf
 from ..email import send_email
-from ..models import User, Module
-from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm, LoginForm, RegistrationForm,
-                    RequestResetPasswordForm, ResetPasswordForm, ApplicantProfileForm, SavingsStartEndForm,
-                    EducationProfileForm)
+
+from ..models import User, Module, SavingsHistory, EditableHTML, PhoneNumberState
+from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
+                    LoginForm, RegistrationForm, RequestResetPasswordForm,
+                    ResetPasswordForm, SavingsStartEndForm, SavingsHistoryForm, ApplicantProfileForm,
+                    EducationProfileForm, VerifyPhoneNumberForm)
+
 from wtforms.fields.core import Label
+from twilio.rest import Client
+
 import logging
 from datetime import datetime, timedelta
 import json
 import os
 import time
 import boto3
+import random
+
 
 @account.route('/')
 @login_required
@@ -287,6 +294,10 @@ def unconfirmed():
         return redirect(url_for('main.index'))
     return render_template('account/unconfirmed.html')
 
+def random_with_N_digits(n):
+    range_start = 10**(n-1)
+    range_end = (10**n)-1
+    return random.randint(range_start, range_end)
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
 @login_required
@@ -294,7 +305,7 @@ def applicant_profile():
     form = ApplicantProfileForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
-        current_user['dob'] = form['dob'].data
+        current_user.dob = form.dob.data
         current_user.gender = form.gender.data
         current_user.ethnicity = form.ethnicity.data
         current_user.mobile_phone = form.mobile_phone.data
@@ -312,24 +323,56 @@ def applicant_profile():
         current_user.number_of_children = form.number_of_children.data
         current_user.completed_forms = True
 
+        verification_code = random_with_N_digits(5)
+
+        client = Client(current_app.config["TWILIO_ACCOUNT_SID"], current_app.config["TWILIO_AUTH_TOKEN"])
+        state = PhoneNumberState(user_id = current_user.id, phone_number = form.mobile_phone.data, verification_code = verification_code)
+
+        client.api.account.messages.create(
+            to=form.mobile_phone.data,
+            from_=current_app.config["TWILIO_PHONE_NUMBER"],
+            body="Your verification code is " + str(verification_code))
+
+        db.session.add(state)
         db.session.add(current_user)
         db.session.commit()
-        return redirect(url_for('account.index'))
+        return redirect(url_for('account.verify'))
     else:
         logging.error(str(form.errors))
 
     return render_template('account/applicant_form.html', form=form)
 
 
+@account.route('/manage/verify-phone', methods=['GET', 'POST'])
+@login_required
+def verify():
+    form = VerifyPhoneNumberForm()
+    if form.validate_on_submit():
+        state = PhoneNumberState.query.filter_by(user_id=current_user.id).first()
+        if str(state.verification_code) == form.code.data:
+            flash('Your phone number has been verified.', 'success')
+            current_user.mobile_phone = state.phone_number
+            db.session.delete(state)
+            db.session.commit()
+            return redirect(url_for('account.index'))
+        else:
+            flash('Incorrect verification code', 'error')
+            db.session.delete(state)
+            db.session.commit()
+            return redirect(url_for('account.applicant_info'))
+    return render_template('account/verify.html', form=form)
+
+
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
 @login_required
 def applicant_profile_edit():
     form = ApplicantProfileForm()
-    current_user.id
     if current_user.completed_forms:
-        form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
+        form.dob.data = datetime.strptime(current_user.dob, '%Y-%m-%d')
         form.gender.data = current_user.gender
         form.ethnicity.data = current_user.ethnicity
+        form.lgbtq.data = current_user.lgbtq
+        form.social_media.data = current_user.social_media
         form.mobile_phone.data = current_user.mobile_phone
         form.home_phone.data = current_user.home_phone
         form.marital_status.data = current_user.marital_status
@@ -350,6 +393,8 @@ def applicant_profile_edit():
         current_user.dob = form.dob.data
         current_user.gender = form.gender.data
         current_user.ethnicity = form.ethnicity.data
+        current_user.lgbtq = form.lgbtq.data
+        current_user.social_media = form.social_media.data
         current_user.mobile_phone = form.mobile_phone.data
         current_user.home_phone = form.home_phone.data
         current_user.marital_status = form.marital_status.data
@@ -378,6 +423,12 @@ def applicant_profile_edit():
 def education_profile():
     form = EducationProfileForm()
     if form.validate_on_submit():
+        current_user.current_education = form.current_education.data
+        current_user.high_school_name = form.high_school_name.data
+        current_user.college_name = form.college_name.data
+        current_user.degree_program = form.degree_program.data
+        current_user.graduation_year = form.graduation_year.data
+
         return redirect(url_for('account.index'))
     else:
         if 'high_school_name' in form.errors and form.current_education.data == 'college':
@@ -456,6 +507,30 @@ def savings():
     return render_template('account/savings.html', form=form, weeks=weeks)
 
 
+@account.route('/savingsHistory/', methods = ['GET', 'POST'])
+def savings_history():
+    
+    form = SavingsHistoryForm()
+
+    if form.validate_on_submit():
+        savings = SavingsHistory(date=form.date.data, balance = form.balance.data, user_id=current_user.id)
+        db.session.add(savings)
+        db.session.commit()
+
+    student_profile = SavingsHistory.query.filter_by(user_id=current_user.id).all()
+    balance_array = []
+    date_added = []
+    
+    if(student_profile is not None):
+        for i in range(len(student_profile)):
+            balance_array.append(student_profile[i].balance)
+            date_added.append(student_profile[i].date)
+
+    return render_template('account/savings_history.html', form = form, 
+        balance = balance_array, date = date_added, 
+    lenBalance = len(balance_array), lenDate = len(date_added))
+
+
 @account.route('/sign-s3/')
 @login_required
 def sign_s3():
@@ -489,3 +564,12 @@ def sign_s3():
         'url_upload': 'https://%s.%s.amazonaws.com' % (S3_BUCKET, S3_REGION),
         'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
         })
+
+
+@account.route('/resources')
+@login_required
+def resources():
+    editable_html_obj = EditableHTML.get_editable_html('resources')
+    return render_template('account/resources.html',
+                           editable_html_obj=editable_html_obj)      
+

@@ -1,11 +1,14 @@
 from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField, SelectField, IntegerField, SubmitField,
-                            TextAreaField)
+
+
+from wtforms.fields import (BooleanField, PasswordField, StringField, IntegerField, SubmitField,
+                            TextAreaField, SelectField)
 from wtforms.fields.html5 import EmailField, DateField, TelField, IntegerField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp, NumberRange
 from ..utils import CustomSelectField
+
 from ..models import User
 
 import datetime
@@ -39,6 +42,11 @@ class RegistrationForm(Form):
             raise ValidationError('Email already registered. (Did you mean to '
                                   '<a href="{}">log in</a> instead?)'
                                   .format(url_for('account.login')))
+
+
+class VerifyPhoneNumberForm(Form):
+    code = StringField('Verification code', validators=[InputRequired()])
+    submit = SubmitField('Submit')
 
 
 class RequestResetPasswordForm(Form):
@@ -114,6 +122,11 @@ class ApplicantProfileForm(Form):
         ['Male', 'Female', 'Trans', 'Non-binary', 'Bigender'], multiple=True)
     ethnicity = CustomSelectField('Ethnicity', validators=[InputRequired(), Length(1, 64)], choices=
         ['American Indian', 'Asian', 'Black', 'Hispanic or Latino', 'Multiracial','White', 'Decline to Identify'])
+    lgbtq = CustomSelectField('LGBTQ?',  choices=['Yes', 'No', 'Prefer not to answer'])
+    social_media = TextAreaField('Social Media Links',
+                                 description='In the case that we cannot reach you by phone, having your social media '
+                                             'information allows us to contact you in the case that something critical '
+                                             'comes up.')
     mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator, Length(1, 64)])
     home_phone = TelField('Home Phone', validators=[phone_validator, Length(0, 64)])
     marital_status = CustomSelectField('Marital Status', validators=[InputRequired(), Length(1, 64)], choices=
@@ -128,8 +141,8 @@ class ApplicantProfileForm(Form):
     city = StringField('City', validators=[InputRequired(), Length(1, 64)])
     state = StringField('State', validators=[InputRequired(), Length(1, 64)])
     zip = StringField('Zip', validators=[InputRequired(), Length(1, 64)])
-    tanf = CustomSelectField('TANF', validators=[InputRequired(), Length(1, 64)], choices=['TANF', 'Not TANF'])
-    etic = CustomSelectField('ETIC', validators=[InputRequired(), Length(1, 64)], choices=['ETIC', 'Declined'])
+    tanf = CustomSelectField('TANF?', choices=['Yes', 'No'], allow_custom=False)
+    etic = CustomSelectField('ETIC?', choices=['Yes', 'No'], allow_custom=False)
     number_of_children = IntegerField('Number of Children', validators=
         [InputRequired(), NumberRange(min=0, max=10)], default=0)
 
@@ -157,3 +170,13 @@ class SavingsStartEndForm(Form):
     end_date = DateField(
         'End Date', validators=[])
     submit = SubmitField('Save')
+
+
+class SavingsHistoryForm(Form):
+    date = DateField('Date Added', format='%Y-%m-%d') 
+    balance = IntegerField('Balance')
+    submit = SubmitField('Update Balance')
+
+    def __repr__(self):
+        return '<SavingsHistory {}, {}>'.format(self.date, self.balance)
+

@@ -80,6 +80,8 @@ class User(UserMixin, db.Model):
     dob = db.Column(db.String(64))
     gender = db.Column(db.String(64))
     ethnicity = db.Column(db.String(64))
+    lgbtq = db.Column(db.String(64))
+    social_media = db.Column(db.String(360))
     mobile_phone = db.Column(db.String(64))
     home_phone = db.Column(db.String(64))
     marital_status = db.Column(db.String(64))
@@ -93,9 +95,17 @@ class User(UserMixin, db.Model):
     tanf = db.Column(db.String(64))
     etic = db.Column(db.String(64))
     number_of_children = db.Column(db.String(64))
+
+    current_education = db.Column(db.String(64))
+    high_school_name = db.Column(db.String(64))
+    college_name = db.Column(db.String(64))
+    degree_program = db.Column(db.String(128))
+    graduation_year = db.Column(db.Integer)
+
     completed_forms = db.Column(db.Boolean, default=False)
 
     bank_balance = db.Column(db.Integer)
+    bank_acct_open = db.Column(db.Date)
     savings_start_date = db.Column(db.Date)
     savings_end_date = db.Column(db.Date)
     goal_amount = db.Column(db.Integer)
