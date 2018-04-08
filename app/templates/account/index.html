@@ -1,8 +1,9 @@
 {% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
 
 {% macro dashboard_option(title, endpoint, description=None, icon=None) %}
-    <a class="column" href="{{ url_for(endpoint) }}">
-        <div class="ui segment">
+    <a class="column">
+        <div class="ui segment" href="{{ url_for(endpoint) }}">
             <h3 class="ui header">
                 {% if icon is not none and endpoint != 'account.savings' and endpoint != 'account.modules' %}
                     <i class="{{ icon }}"></i>
@@ -35,6 +36,24 @@
                 </div>
             </h3>
         </div>
+        {% if endpoint == 'account.savings' %}
+            {% set flashes = {
+                'error':   get_flashed_messages(category_filter=['form-error']),
+                'warning': get_flashed_messages(category_filter=['form-check-email']),
+                'info':    get_flashed_messages(category_filter=['form-info']),
+                'success': get_flashed_messages(category_filter=['form-success'])
+            } %}
+
+                    {{ f.begin_form(update_form, flashes) }}
+                    <h3 class="ui header">
+                        {{ update_form.balance.label }}
+                    </h3>
+                    <div style="margin-bottom:10px">
+                        {{ update_form.balance(placeholder=update_form.balance.label.text) }}
+                    </div>
+                    {{ f.render_form_field(update_form.submit) }}
+                    {{ f.end_form(update_form) }}
+        {% endif %}
     </a>
 {% endmacro %}
 
