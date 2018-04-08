@@ -14,7 +14,7 @@ from wtforms.fields.core import Label
 from twilio.rest import Client
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, date as datetime_date, timedelta
 import json
 import os
 import time
@@ -25,7 +25,9 @@ import random
 @login_required
 def index():
     print(current_user.is_authenticated)
-    return render_template('account/index.html')
+    goal_balance = min(current_user.goal_amount, float(current_user.goal_amount)*(datetime_date.today()-current_user.savings_start_date)/(current_user.savings_end_date-current_user.savings_start_date))
+    goal_balance = round(goal_balance, 2)
+    return render_template('account/index.html', user=current_user, goal_balance=goal_balance)
 
 
 @account.route('/login', methods=['GET', 'POST'])

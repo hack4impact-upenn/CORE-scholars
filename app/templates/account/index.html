@@ -2,16 +2,34 @@
 
 {% macro dashboard_option(title, endpoint, description=None, icon=None) %}
     <a class="column" href="{{ url_for(endpoint) }}">
-        <div class="ui padded segment">
+        <div class="ui segment">
             <h3 class="ui header">
-                {% if icon is not none %}
+                {% if icon is not none and endpoint != 'account.savings' and endpoint != 'account.modules' %}
                     <i class="{{ icon }}"></i>
                 {% endif %}
-                <div class="content">
+                <div class="content" style="width:100%">
                     {{ title }}
                     {% if description is not none %}
                         <div class="sub header">
                             {{ description }}
+                        </div>
+                    {% endif %}
+                    {% if endpoint == 'account.savings' %}
+                        <div id="container">
+                            <div id="left" style="display:inline-block;*display:inline;vertical-align:top;width=40%;float:left;margin:5%">
+                                <h4>Current Balance</h4>
+                                ${{ user.bank_balance }}
+                            </div>
+                            <div id="right" style="display:inline-block;*display:inline;vertical-align:top;width=40%;float:left;margin:5%">
+                                <h4>Goal Balance</h4>
+                                ${{ goal_balance }}
+                            </div>
+                    {% elif endpoint == 'account.modules' %}
+                        <h4>Modules Progress</h4>
+                        <div class="ui progress" style="width:100%">
+                            <div class="bar">
+                                <div class="progress"></div>
+                            </div>
                         </div>
                     {% endif %}
                 </div>
@@ -41,4 +59,8 @@
             </div>
         </div>
     </div>
+    <script>
+        $('.progress').progress({percent: 100*{{ user.modules | length }}/{{ user.TOTAL_MODULES }} });
+        console.log(100*{{ user.modules | length }}/{{ user.TOTAL_MODULES }});
+    </script>
 {% endblock %}
