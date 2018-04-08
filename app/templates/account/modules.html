@@ -1,26 +1,44 @@
 {% extends 'layouts/base.html' %}
 
 {% block content %}
-    <div class="ui text container">
-      <h1>Modules</h1>
+<div class="ui text container">
+
+    <br>
+
+    <h2>Modules</h2>
+    <p style="color: #767676;">In publishing and graphic design, lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content (also called greeking). Replacing the actual content with placeholder text allows designers to design the form of the content before the content itself has.</p>
+
+    <br>
+
+    <table class="ui celled structured table">
+      <tbody>  
         {% for i in range(num_modules) %}
-          <div class="ui checkbox">
-            {% if i+1 in modules.keys() %}
-              <input id={{ "module" + (i+1)|string }} type="checkbox" checked style="display:inline-block">
-            {% else %}
-              <input id={{ "module" + (i+1)|string }} type="checkbox" style="display:inline-block"> 
-            {% endif %}
-          </div>
-            <label style="display:inline-block">Module {{ (i+1)|string }}</label>
+        <tr>
+
+          {% if i+1 in modules.keys() %}
+            <td class="center aligned"><i class="large green check circle icon"></i></td>
+          {% else %}
+            <td class="center aligned"><i class="large circle outline icon"></i></td>
+          {% endif %}
+          
+          <td>
+            <label style="display:inline-block; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Module {{ (i+1)|string }}</label><br>
             {% if i+1 in modules.keys() %}
                 <a href={{ modules[i+1].certificate_url }}>{{ modules[i+1].filename }}</a>
-            {% else %}
-                <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block">
             {% endif %}
+          </td>
+
+          <td>
+            <input type='file' id={{ "file" + (i+1)|string }} style="display:inline-block">
             </input>
-          <div class="ui divider"></div>
+          </td>
+        </tr>
         {% endfor %}
-    </div>
+      </tbody>
+
+    </table>
+</div>
+
 <script>
  function uploadFile(file, s3Data, url, urlUpload, fieldName){
   // basic validation
@@ -122,4 +140,11 @@ function progressUpdate(url, filename, field) {
         });
     });
 </script>
+
+<style type="text/css">
+  input[type='file'] {
+    color: transparent;
+  }
+</style>
+
 {% endblock %}
