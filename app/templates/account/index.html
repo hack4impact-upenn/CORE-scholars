@@ -34,12 +34,15 @@
                 {% if not current_user.completed_forms %}
                 {{ dashboard_option('Applicant Profile Form', 'account.applicant_profile',
                                     description='Fill out applicant profile', icon='file icon') }}
+                {{ dashboard_option('Education Profile Form', 'account.education_profile',
+                                    description='Fill out education profile', icon='file icon') }}
                 {% else %}
                 {{ dashboard_option('Applicant Profile Form Edit', 'account.applicant_profile_edit',
                                     description='Edit applicant profile', icon='edit icon') }}
-                {% endif %}
-                {{ dashboard_option('Education Profile Form', 'account.education_profile',
+                {{ dashboard_option('Education Profile Form Edit', 'account.education_profile_edit',
                                     description='Fill out education profile', icon='file icon') }}
+                {% endif %}
+
             </div>
         </div>
     </div>

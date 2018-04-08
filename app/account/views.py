@@ -321,7 +321,6 @@ def applicant_profile():
         current_user.tanf = form.tanf.data
         current_user.etic = form.etic.data
         current_user.number_of_children = form.number_of_children.data
-        current_user.completed_forms = True
 
         verification_code = random_with_N_digits(5)
 
@@ -422,6 +421,35 @@ def applicant_profile_edit():
 @login_required
 def education_profile():
     form = EducationProfileForm()
+    if form.validate_on_submit():
+        current_user.current_education = form.current_education.data
+        current_user.high_school_name = form.high_school_name.data
+        current_user.college_name = form.college_name.data
+        current_user.degree_program = form.degree_program.data
+        current_user.graduation_year = form.graduation_year.data
+        current_user.completed_forms = True
+
+        return redirect(url_for('account.index'))
+    else:
+        if 'high_school_name' in form.errors and form.current_education.data == 'college':
+            return redirect(url_for('account.index'))
+
+        logging.error(str())
+
+    return render_template('account/education_form.html', form=form)
+
+
+@account.route('/manage/education-information-edit', methods=['GET', 'POST'])
+@login_required
+def education_profile_edit():
+    form = EducationProfileForm()
+    if current_user.completed_forms:
+        form.current_education.data = current_user.current_education
+        form.high_school_name.data = current_user.high_school_name
+        form.college_name.data = current_user.college_name
+        form.degree_program.data = current_user.degree_program
+        form.graduation_year.data = current_user.graduation_year
+
     if form.validate_on_submit():
         current_user.current_education = form.current_education.data
         current_user.high_school_name = form.high_school_name.data
