@@ -1,12 +1,17 @@
 from flask import url_for
 from flask_wtf import Form
 from wtforms import ValidationError
-from wtforms.fields import (BooleanField, PasswordField, StringField, IntegerField, SubmitField, TextAreaField)
+
+
+from wtforms.fields import (BooleanField, PasswordField, StringField, IntegerField, SubmitField,
+                            TextAreaField, SelectField)
 from wtforms.fields.html5 import EmailField, DateField, TelField, IntegerField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp, NumberRange
 from ..utils import CustomSelectField
 
-from ..models import User, SavingsHistory
+from ..models import User
+
+import datetime
 
 
 class LoginForm(Form):
@@ -107,8 +112,11 @@ class ChangeEmailForm(Form):
 phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
                          message="Not a valid phone number. Try the format 111-111-1111")
 
+year_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
+                         message="Not a valid phone number. Try the format 111-111-1111")
 
-class ApplicantInfoForm(Form):
+
+class ApplicantProfileForm(Form):
     dob = DateField('Date of Birth', format='%Y-%m-%d', validators=[InputRequired()])
     gender = CustomSelectField('Gender', validators=[InputRequired(), Length(1, 64)], choices=
         ['Male', 'Female', 'Trans', 'Non-binary', 'Bigender'], multiple=True)
@@ -141,12 +149,28 @@ class ApplicantInfoForm(Form):
     submit = SubmitField('Submit')
 
 
+current_year = datetime.datetime.now().year
+
+
+class EducationProfileForm(Form):
+    current_education = SelectField('Education Status', choices=[('high-school', 'Graduating High School Senior'),
+        ('college', 'Current or Accepted College, Technical School or Vocational School Student')])
+
+    high_school_name = StringField('High School Name', validators=[Length(1, 64)])
+    college_name = StringField('College or School Name', validators=[Length(1, 64)])
+    degree_program = StringField('Name of Degree Program', validators=[Length(1, 128)])
+    graduation_year = IntegerField('Graduation Year', validators=
+        [NumberRange(min=current_year, max=current_year+8)], default=current_year+4)
+    submit = SubmitField('Submit')
+
+
 class SavingsStartEndForm(Form):
     start_date = DateField(
         'Start Date', validators=[])
     end_date = DateField(
         'End Date', validators=[])
     submit = SubmitField('Save')
+
 
 class SavingsHistoryForm(Form):
     date = DateField('Date Added', format='%Y-%m-%d') 

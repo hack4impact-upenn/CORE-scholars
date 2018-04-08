@@ -1,0 +1,42 @@
+{% extends 'layouts/base.html' %}
+{% import 'macros/form_macros.html' as f %}
+
+{% block content %}
+    <div class="ui grid container">
+        <div class="eight wide computer sixteen wide mobile centered column">
+            <h2 class="ui dividing header">Education Profile</h2>
+
+            {% set flashes = {
+                'error':   get_flashed_messages(category_filter=['form-error']),
+                'info':    get_flashed_messages(category_filter=['form-info']),
+                'success': get_flashed_messages(category_filter=['form-success'])
+            } %}
+
+            {{ f.begin_form(form, flashes) }}
+                {{ f.render_form_field(form.current_education, extra_classes='required') }}
+                {{ f.render_form_field(form.high_school_name, extra_classes='required') }}
+                {{ f.render_form_field(form.college_name, extra_classes='required') }}
+                {{ f.render_form_field(form.degree_program, extra_classes='required') }}
+                {{ f.render_form_field(form.graduation_year, extra_classes='required') }}
+
+                {{ f.form_message(flashes['error'], header='Something went wrong.', class='error') }}
+                {{ f.form_message(flashes['warning'], header='Check your email.', class='warning') }}
+                {{ f.form_message(flashes['info'], header='Information', class='info') }}
+                {{ f.form_message(flashes['success'], header='Success!', class='success') }}
+
+                {{ f.render_form_field(form.submit) }}
+            {{ f.end_form(form) }}
+
+            <script type="text/javascript">
+            $("#current_education").parent().change(function() {
+                var selected = $(this).find(":selected").val();
+                if (selected == 'high-school') {
+                    $('#high_school_name').parent().show()
+                } else {
+                    $('#high_school_name').parent().hide()
+                }
+            })
+            </script>
+        </div>
+    </div>
+{% endblock %}

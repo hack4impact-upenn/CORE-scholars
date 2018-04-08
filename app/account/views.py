@@ -6,10 +6,13 @@ from flask_rq import get_queue
 from . import account
 from .. import db, csrf
 from ..email import send_email
+
 from ..models import User, Module, SavingsHistory, EditableHTML, PhoneNumberState
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ApplicantInfoForm, SavingsStartEndForm, SavingsHistoryForm, VerifyPhoneNumberForm)
+                    ResetPasswordForm, SavingsStartEndForm, SavingsHistoryForm, ApplicantProfileForm,
+                    EducationProfileForm, VerifyPhoneNumberForm)
+
 from wtforms.fields.core import Label
 from twilio.rest import Client
 
@@ -20,6 +23,7 @@ import os
 import time
 import boto3
 import random
+
 
 @account.route('/')
 @login_required
@@ -297,8 +301,8 @@ def random_with_N_digits(n):
 
 @account.route('/manage/applicant-information', methods=['GET', 'POST'])
 @login_required
-def applicant_info():
-    form = ApplicantInfoForm()
+def applicant_profile():
+    form = ApplicantProfileForm()
     if form.validate_on_submit():
         flash('Thank you!', 'success')
         current_user.dob = form.dob.data
@@ -317,7 +321,6 @@ def applicant_info():
         current_user.tanf = form.tanf.data
         current_user.etic = form.etic.data
         current_user.number_of_children = form.number_of_children.data
-        current_user.completed_forms = True
 
         verification_code = random_with_N_digits(5)
 
@@ -336,7 +339,8 @@ def applicant_info():
     else:
         logging.error(str(form.errors))
 
-    return render_template('account/user-info.html', form=form)
+    return render_template('account/applicant_form.html', form=form)
+
 
 @account.route('/manage/verify-phone', methods=['GET', 'POST'])
 @login_required
@@ -357,13 +361,13 @@ def verify():
             return redirect(url_for('account.applicant_info'))
     return render_template('account/verify.html', form=form)
 
+
 @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
 @login_required
-def applicant_info_edit():
-    form = ApplicantInfoForm()
-    current_user.id
+def applicant_profile_edit():
+    form = ApplicantProfileForm()
     if current_user.completed_forms:
-        form.dob.data =  datetime.strptime(current_user.dob, '%Y-%m-%d')
+        form.dob.data = datetime.strptime(current_user.dob, '%Y-%m-%d')
         form.gender.data = current_user.gender
         form.ethnicity.data = current_user.ethnicity
         form.lgbtq.data = current_user.lgbtq
@@ -410,7 +414,57 @@ def applicant_info_edit():
     else:
         logging.error(str(form.errors))
 
-    return render_template('account/user-info.html', form=form)
+    return render_template('account/applicant_form.html', form=form)
+
+
+@account.route('/manage/education-information', methods=['GET', 'POST'])
+@login_required
+def education_profile():
+    form = EducationProfileForm()
+    if form.validate_on_submit():
+        current_user.current_education = form.current_education.data
+        current_user.high_school_name = form.high_school_name.data
+        current_user.college_name = form.college_name.data
+        current_user.degree_program = form.degree_program.data
+        current_user.graduation_year = form.graduation_year.data
+        current_user.completed_forms = True
+
+        return redirect(url_for('account.index'))
+    else:
+        if 'high_school_name' in form.errors and form.current_education.data == 'college':
+            return redirect(url_for('account.index'))
+
+        logging.error(str())
+
+    return render_template('account/education_form.html', form=form)
+
+
+@account.route('/manage/education-information-edit', methods=['GET', 'POST'])
+@login_required
+def education_profile_edit():
+    form = EducationProfileForm()
+    if current_user.completed_forms:
+        form.current_education.data = current_user.current_education
+        form.high_school_name.data = current_user.high_school_name
+        form.college_name.data = current_user.college_name
+        form.degree_program.data = current_user.degree_program
+        form.graduation_year.data = current_user.graduation_year
+
+    if form.validate_on_submit():
+        current_user.current_education = form.current_education.data
+        current_user.high_school_name = form.high_school_name.data
+        current_user.college_name = form.college_name.data
+        current_user.degree_program = form.degree_program.data
+        current_user.graduation_year = form.graduation_year.data
+
+        return redirect(url_for('account.index'))
+    else:
+        if 'high_school_name' in form.errors and form.current_education.data == 'college':
+            return redirect(url_for('account.index'))
+
+        logging.error(str())
+
+    return render_template('account/education_form.html', form=form)
 
 
 @account.route('/modules')
@@ -480,6 +534,7 @@ def savings():
             weeks.append(round(increment*(i+1), 2))
     return render_template('account/savings.html', form=form, weeks=weeks)
 
+
 @account.route('/savingsHistory/', methods = ['GET', 'POST'])
 def savings_history():
     
@@ -537,6 +592,7 @@ def sign_s3():
         'url_upload': 'https://%s.%s.amazonaws.com' % (S3_BUCKET, S3_REGION),
         'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
         })
+
 
 @account.route('/resources')
 @login_required
