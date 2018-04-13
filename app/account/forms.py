@@ -125,8 +125,7 @@ class ApplicantProfileForm(Form):
     lgbtq = CustomSelectField('LGBTQ?',  choices=['Yes', 'No', 'Prefer not to answer'])
     social_media = TextAreaField('Social Media Links',
                                  description='In the case that we cannot reach you by phone, having your social media '
-                                             'information allows us to contact you in the case that something critical '
-                                             'comes up.')
+                                             'information allows us to contact you if something critical comes up.')
     mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator, Length(1, 64)])
     home_phone = TelField('Home Phone', validators=[phone_validator, Length(0, 64)])
     marital_status = CustomSelectField('Marital Status', validators=[InputRequired(), Length(1, 64)], choices=
