@@ -110,6 +110,7 @@ class User(UserMixin, db.Model):
     savings_end_date = db.Column(db.Date)
     goal_amount = db.Column(db.Integer)
     modules = db.relationship('Module', secondary=module_associations)
+    TOTAL_MODULES = db.Column(db.Integer)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -121,7 +122,9 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(default=True).first()
         self.savings_start_date = None
         self.savings_end_date = None
+        self.bank_balance = 0
         self.goal_amount = 500
+        self.TOTAL_MODULES = 8
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)

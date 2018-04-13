@@ -10,14 +10,14 @@ from ..email import send_email
 from ..models import User, Module, SavingsHistory, EditableHTML, PhoneNumberState
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, SavingsStartEndForm, SavingsHistoryForm, ApplicantProfileForm,
-                    EducationProfileForm, VerifyPhoneNumberForm)
+                    ResetPasswordForm, ApplicantProfileForm, SavingsStartEndForm, SavingsHistoryForm, \
+                    EducationProfileForm, VerifyPhoneNumberForm, SavingsUpdateForm)
 
 from wtforms.fields.core import Label
 from twilio.rest import Client
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, date as datetime_date, timedelta
 import json
 import os
 import time
@@ -25,11 +25,21 @@ import boto3
 import random
 
 
-@account.route('/')
+@account.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
     print(current_user.is_authenticated)
-    return render_template('account/index.html')
+    form = SavingsUpdateForm()
+    if form.validate_on_submit():
+        savings = SavingsHistory(date=datetime_date.today(), balance = form.balance.data, user_id=current_user.id)
+        current_user.bank_balance = form.balance.data
+        db.session.add(savings)
+        db.session.commit()
+        return redirect(url_for('account.index'))
+    form.balance.data = current_user.bank_balance
+    goal_balance = min(current_user.goal_amount, float(current_user.goal_amount)*(datetime_date.today()-current_user.savings_start_date).days/(current_user.savings_end_date-current_user.savings_start_date).days)
+    goal_balance = round(goal_balance, 2)
+    return render_template('account/index.html', user=current_user, goal_balance=goal_balance, update_form=form)
 
 
 @account.route('/login', methods=['GET', 'POST'])
@@ -542,6 +552,7 @@ def savings_history():
 
     if form.validate_on_submit():
         savings = SavingsHistory(date=form.date.data, balance = form.balance.data, user_id=current_user.id)
+        current_user.bank_balance = form.balance.data
         db.session.add(savings)
         db.session.commit()
 
