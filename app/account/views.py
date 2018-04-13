@@ -298,6 +298,12 @@ def before_request():
             and request.endpoint != 'account.unconfirmed' \
             and request.endpoint != 'account.logout':
         return redirect(url_for('account.unconfirmed'))
+    if current_user.is_authenticated \
+            and not current_user.completed_forms \
+            and request.endpoint != 'static' \
+            and request.endpoint != 'account.profile' \
+            and request.endpoint != 'account.logout':
+        return redirect(url_for('account.profile'))
 
 
 @account.route('/unconfirmed')
