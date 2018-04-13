@@ -10,8 +10,8 @@ from ..email import send_email
 from ..models import User, Module, SavingsHistory, EditableHTML, PhoneNumberState
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
-                    ResetPasswordForm, ApplicantProfileForm, SavingsStartEndForm, SavingsHistoryForm, \
-                    EducationProfileForm, VerifyPhoneNumberForm, SavingsUpdateForm)
+                    ResetPasswordForm, ProfileForm, SavingsStartEndForm, SavingsHistoryForm,
+                    VerifyPhoneNumberForm, SavingsUpdateForm)
 
 from wtforms.fields.core import Label
 from twilio.rest import Client
@@ -304,52 +304,129 @@ def unconfirmed():
         return redirect(url_for('main.index'))
     return render_template('account/unconfirmed.html')
 
-def random_with_N_digits(n):
+def random_with_n_digits(n):
     range_start = 10**(n-1)
     range_end = (10**n)-1
     return random.randint(range_start, range_end)
 
-@account.route('/manage/applicant-information', methods=['GET', 'POST'])
+
+@account.route('/manage/profile', methods=['GET', 'POST'])
 @login_required
-def applicant_profile():
-    form = ApplicantProfileForm()
-    if form.validate_on_submit():
+def profile():
+    form = ProfileForm()
+    if current_user.completed_forms:
+        # Primary Information
+        form.primary.dob.data = current_user.dob
+        form.primary.mobile_phone.data = current_user.mobile_phone
+        form.primary.home_phone.data = current_user.home_phone
+        # Demographic Information
+        form.demographic.gender.data = current_user.gender
+        form.demographic.ethnicity.data = current_user.ethnicity
+        form.demographic.lgbtq.data = current_user.lgbtq
+        form.demographic.citizenship_status.data = current_user.citizenship_status
+        form.demographic.household_status.data = current_user.household_status
+        form.demographic.marital_status.data = current_user.marital_status
+        form.demographic.work_status.data = current_user.work_status
+        form.demographic.number_of_children.data = current_user.number_of_children
+        # Geographic Information
+        form.geographic.street.data = current_user.street
+        form.geographic.city.data = current_user.city
+        form.geographic.state.data = current_user.state
+        form.geographic.zip.data = current_user.zip
+        # Additional Information
+        form.additional.social_media.data = current_user.social_media
+        form.additional.tanf.data = current_user.tanf
+        form.additional.etic.data = current_user.etic
+        form.additional.extra_information.data = current_user.extra_information
+
+    def update_information():
         flash('Thank you!', 'success')
-        current_user.dob = form.dob.data
-        current_user.gender = form.gender.data
-        current_user.ethnicity = form.ethnicity.data
-        current_user.mobile_phone = form.mobile_phone.data
-        current_user.home_phone = form.home_phone.data
-        current_user.marital_status = form.marital_status.data
-        current_user.household_status = form.household_status.data
-        current_user.citizenship_status = form.citizenship_status.data
-        current_user.work_status = form.work_status.data
-        current_user.street = form.street.data
-        current_user.city = form.city.data
-        current_user.state = form.state.data
-        current_user.zip = form.zip.data
-        current_user.tanf = form.tanf.data
-        current_user.etic = form.etic.data
-        current_user.number_of_children = form.number_of_children.data
+        # Primary Information
+        current_user.dob = form.primary.dob.data
+        current_user.mobile_phone = form.primary.mobile_phone.data
+        current_user.home_phone = form.primary.home_phone.data
+        # Demographic Information
+        current_user.gender = form.demographic.gender.data
+        current_user.ethnicity = form.demographic.ethnicity.data
+        current_user.lgbtq = form.demographic.lgbtq.data
+        current_user.citizenship_status = form.demographic.citizenship_status.data
+        current_user.household_status = form.demographic.household_status.data
+        current_user.marital_status = form.demographic.marital_status.data
+        current_user.work_status = form.demographic.work_status.data
+        current_user.number_of_children = form.demographic.number_of_children.data
+        # Geographic Information
+        current_user.street = form.geographic.street.data
+        current_user.city = form.geographic.city.data
+        current_user.state = form.geographic.state.data
+        current_user.zip = form.geographic.zip.data
+        # Education Information
+        current_user.high_school_name = form.education.high_school_name.data
+        current_user.college_name = form.education.college_name.data
+        current_user.degree_program = form.education.degree_program.data
+        current_user.graduation_year = form.education.graduation_year.data
+        # Additional Information
+        current_user.social_media = form.additional.social_media.data
+        current_user.tanf = form.additional.tanf.data
+        current_user.etic = form.additional.etic.data
+        current_user.extra_information = form.additional.extra_information.data
+        # Update completed forms
+        current_user.completed_forms = True
 
-        verification_code = random_with_N_digits(5)
-
-        client = Client(current_app.config["TWILIO_ACCOUNT_SID"], current_app.config["TWILIO_AUTH_TOKEN"])
-        state = PhoneNumberState(user_id = current_user.id, phone_number = form.mobile_phone.data, verification_code = verification_code)
-
-        client.api.account.messages.create(
-            to=form.mobile_phone.data,
-            from_=current_app.config["TWILIO_PHONE_NUMBER"],
-            body="Your verification code is " + str(verification_code))
-
-        db.session.add(state)
         db.session.add(current_user)
         db.session.commit()
-        return redirect(url_for('account.verify'))
-    else:
-        logging.error(str(form.errors))
+        return redirect(url_for('account.index'))
 
-    return render_template('account/applicant_form.html', form=form)
+    if form.validate_on_submit():
+        update_information()
+    else:
+        if 'high_school_name' in form.errors and form.current_education.data == 'college':
+            update_information()
+        logging.error(str())
+
+    return render_template('account/profile.html', form=form)
+
+
+# @account.route('/manage/applicant-information', methods=['GET', 'POST'])
+# @login_required
+# def applicant_profile():
+#     form = ApplicantProfileForm()
+#     if form.validate_on_submit():
+#         flash('Thank you!', 'success')
+#         current_user.dob = form.dob.data
+#         current_user.gender = form.gender.data
+#         current_user.ethnicity = form.ethnicity.data
+#         current_user.mobile_phone = form.mobile_phone.data
+#         current_user.home_phone = form.home_phone.data
+#         current_user.marital_status = form.marital_status.data
+#         current_user.household_status = form.household_status.data
+#         current_user.citizenship_status = form.citizenship_status.data
+#         current_user.work_status = form.work_status.data
+#         current_user.street = form.street.data
+#         current_user.city = form.city.data
+#         current_user.state = form.state.data
+#         current_user.zip = form.zip.data
+#         current_user.tanf = form.tanf.data
+#         current_user.etic = form.etic.data
+#         current_user.number_of_children = form.number_of_children.data
+#
+#         verification_code = random_with_n_digits(5)
+#
+#         client = Client(current_app.config["TWILIO_ACCOUNT_SID"], current_app.config["TWILIO_AUTH_TOKEN"])
+#         state = PhoneNumberState(user_id = current_user.id, phone_number = form.mobile_phone.data, verification_code = verification_code)
+#
+#         client.api.account.messages.create(
+#             to=form.mobile_phone.data,
+#             from_=current_app.config["TWILIO_PHONE_NUMBER"],
+#             body="Your verification code is " + str(verification_code))
+#
+#         db.session.add(state)
+#         db.session.add(current_user)
+#         db.session.commit()
+#         return redirect(url_for('account.verify'))
+#     else:
+#         logging.error(str(form.errors))
+#
+#     return render_template('account/applicant_form.html', form=form)
 
 
 @account.route('/manage/verify-phone', methods=['GET', 'POST'])
@@ -372,109 +449,109 @@ def verify():
     return render_template('account/verify.html', form=form)
 
 
-@account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
-@login_required
-def applicant_profile_edit():
-    form = ApplicantProfileForm()
-    if current_user.completed_forms:
-        form.dob.data = datetime.strptime(current_user.dob, '%Y-%m-%d')
-        form.gender.data = current_user.gender
-        form.ethnicity.data = current_user.ethnicity
-        form.lgbtq.data = current_user.lgbtq
-        form.social_media.data = current_user.social_media
-        form.mobile_phone.data = current_user.mobile_phone
-        form.home_phone.data = current_user.home_phone
-        form.marital_status.data = current_user.marital_status
-        form.household_status.data = current_user.household_status
-        form.citizenship_status.data = current_user.citizenship_status
-        form.work_status.data = current_user.work_status
-        form.street.data = current_user.street
-        form.city.data = current_user.city
-        form.state.data = current_user.state
-        form.zip.data = current_user.zip
-        form.tanf.data = current_user.tanf
-        form.etic.data = current_user.etic
-        form.number_of_children.data = current_user.number_of_children
-        form.submit.label = Label('submit', 'Save Information')
-
-    if form.validate_on_submit():
-        flash('Thank you!', 'success')
-        current_user.dob = form.dob.data
-        current_user.gender = form.gender.data
-        current_user.ethnicity = form.ethnicity.data
-        current_user.lgbtq = form.lgbtq.data
-        current_user.social_media = form.social_media.data
-        current_user.mobile_phone = form.mobile_phone.data
-        current_user.home_phone = form.home_phone.data
-        current_user.marital_status = form.marital_status.data
-        current_user.household_status = form.household_status.data
-        current_user.citizenship_status = form.citizenship_status.data
-        current_user.work_status = form.work_status.data
-        current_user.street = form.street.data
-        current_user.city = form.city.data
-        current_user.state = form.state.data
-        current_user.zip = form.zip.data
-        current_user.tanf = form.tanf.data
-        current_user.etic = form.etic.data
-        current_user.number_of_children = form.number_of_children.data
-
-        db.session.add(current_user)
-        db.session.commit()
-        return redirect(url_for('account.index'))
-    else:
-        logging.error(str(form.errors))
-
-    return render_template('account/applicant_form.html', form=form)
-
-
-@account.route('/manage/education-information', methods=['GET', 'POST'])
-@login_required
-def education_profile():
-    form = EducationProfileForm()
-    if form.validate_on_submit():
-        current_user.current_education = form.current_education.data
-        current_user.high_school_name = form.high_school_name.data
-        current_user.college_name = form.college_name.data
-        current_user.degree_program = form.degree_program.data
-        current_user.graduation_year = form.graduation_year.data
-        current_user.completed_forms = True
-
-        return redirect(url_for('account.index'))
-    else:
-        if 'high_school_name' in form.errors and form.current_education.data == 'college':
-            return redirect(url_for('account.index'))
-
-        logging.error(str())
-
-    return render_template('account/education_form.html', form=form)
-
-
-@account.route('/manage/education-information-edit', methods=['GET', 'POST'])
-@login_required
-def education_profile_edit():
-    form = EducationProfileForm()
-    if current_user.completed_forms:
-        form.current_education.data = current_user.current_education
-        form.high_school_name.data = current_user.high_school_name
-        form.college_name.data = current_user.college_name
-        form.degree_program.data = current_user.degree_program
-        form.graduation_year.data = current_user.graduation_year
-
-    if form.validate_on_submit():
-        current_user.current_education = form.current_education.data
-        current_user.high_school_name = form.high_school_name.data
-        current_user.college_name = form.college_name.data
-        current_user.degree_program = form.degree_program.data
-        current_user.graduation_year = form.graduation_year.data
-
-        return redirect(url_for('account.index'))
-    else:
-        if 'high_school_name' in form.errors and form.current_education.data == 'college':
-            return redirect(url_for('account.index'))
-
-        logging.error(str())
-
-    return render_template('account/education_form.html', form=form)
+# @account.route('/manage/applicant-information-edit', methods=['GET', 'POST'])
+# @login_required
+# def applicant_profile_edit():
+#     form = ApplicantProfileForm()
+#     if current_user.completed_forms:
+#         form.dob.data = datetime.strptime(current_user.dob, '%Y-%m-%d')
+#         form.gender.data = current_user.gender
+#         form.ethnicity.data = current_user.ethnicity
+#         form.lgbtq.data = current_user.lgbtq
+#         form.social_media.data = current_user.social_media
+#         form.mobile_phone.data = current_user.mobile_phone
+#         form.home_phone.data = current_user.home_phone
+#         form.marital_status.data = current_user.marital_status
+#         form.household_status.data = current_user.household_status
+#         form.citizenship_status.data = current_user.citizenship_status
+#         form.work_status.data = current_user.work_status
+#         form.street.data = current_user.street
+#         form.city.data = current_user.city
+#         form.state.data = current_user.state
+#         form.zip.data = current_user.zip
+#         form.tanf.data = current_user.tanf
+#         form.etic.data = current_user.etic
+#         form.number_of_children.data = current_user.number_of_children
+#         form.submit.label = Label('submit', 'Save Information')
+#
+#     if form.validate_on_submit():
+#         flash('Thank you!', 'success')
+#         current_user.dob = form.dob.data
+#         current_user.gender = form.gender.data
+#         current_user.ethnicity = form.ethnicity.data
+#         current_user.lgbtq = form.lgbtq.data
+#         current_user.social_media = form.social_media.data
+#         current_user.mobile_phone = form.mobile_phone.data
+#         current_user.home_phone = form.home_phone.data
+#         current_user.marital_status = form.marital_status.data
+#         current_user.household_status = form.household_status.data
+#         current_user.citizenship_status = form.citizenship_status.data
+#         current_user.work_status = form.work_status.data
+#         current_user.street = form.street.data
+#         current_user.city = form.city.data
+#         current_user.state = form.state.data
+#         current_user.zip = form.zip.data
+#         current_user.tanf = form.tanf.data
+#         current_user.etic = form.etic.data
+#         current_user.number_of_children = form.number_of_children.data
+#
+#         db.session.add(current_user)
+#         db.session.commit()
+#         return redirect(url_for('account.index'))
+#     else:
+#         logging.error(str(form.errors))
+#
+#     return render_template('account/applicant_form.html', form=form)
+#
+#
+# @account.route('/manage/education-information', methods=['GET', 'POST'])
+# @login_required
+# def education_profile():
+#     form = EducationProfileForm()
+#     if form.validate_on_submit():
+#         current_user.current_education = form.current_education.data
+#         current_user.high_school_name = form.high_school_name.data
+#         current_user.college_name = form.college_name.data
+#         current_user.degree_program = form.degree_program.data
+#         current_user.graduation_year = form.graduation_year.data
+#         current_user.completed_forms = True
+#
+#         return redirect(url_for('account.index'))
+#     else:
+#         if 'high_school_name' in form.errors and form.current_education.data == 'college':
+#             return redirect(url_for('account.index'))
+#
+#         logging.error(str())
+#
+#     return render_template('account/education_form.html', form=form)
+#
+#
+# @account.route('/manage/education-information-edit', methods=['GET', 'POST'])
+# @login_required
+# def education_profile_edit():
+#     form = EducationProfileForm()
+#     if current_user.completed_forms:
+#         form.current_education.data = current_user.current_education
+#         form.high_school_name.data = current_user.high_school_name
+#         form.college_name.data = current_user.college_name
+#         form.degree_program.data = current_user.degree_program
+#         form.graduation_year.data = current_user.graduation_year
+#
+#     if form.validate_on_submit():
+#         current_user.current_education = form.current_education.data
+#         current_user.high_school_name = form.high_school_name.data
+#         current_user.college_name = form.college_name.data
+#         current_user.degree_program = form.degree_program.data
+#         current_user.graduation_year = form.graduation_year.data
+#
+#         return redirect(url_for('account.index'))
+#     else:
+#         if 'high_school_name' in form.errors and form.current_education.data == 'college':
+#             return redirect(url_for('account.index'))
+#
+#         logging.error(str())
+#
+#     return render_template('account/education_form.html', form=form)
 
 
 @account.route('/modules')

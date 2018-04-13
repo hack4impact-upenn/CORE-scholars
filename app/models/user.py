@@ -95,6 +95,7 @@ class User(UserMixin, db.Model):
     tanf = db.Column(db.String(64))
     etic = db.Column(db.String(64))
     number_of_children = db.Column(db.String(64))
+    extra_information = db.Column(db.String(600))
 
     current_education = db.Column(db.String(64))
     high_school_name = db.Column(db.String(64))
