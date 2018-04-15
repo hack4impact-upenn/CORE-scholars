@@ -29,7 +29,8 @@
 
             <script type="text/javascript">
             $("#current_education").parent().change(function() {
-                var selected = $(this).find(":selected").val();
+                var selected = $(this).find(":selected").attr('data-value').val();
+                console.log(selected)
                 if (selected == 'high-school') {
                     $('#high_school_name').parent().show()
                 } else {

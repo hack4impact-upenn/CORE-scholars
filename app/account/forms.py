@@ -4,7 +4,7 @@ from wtforms import ValidationError
 
 
 from wtforms.fields import (BooleanField, PasswordField, StringField, IntegerField, SubmitField,
-                            TextAreaField, SelectField)
+                            TextAreaField, SelectField, FormField)
 from wtforms.fields.html5 import EmailField, DateField, TelField, IntegerField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Regexp, NumberRange
 from ..utils import CustomSelectField
@@ -112,54 +112,65 @@ class ChangeEmailForm(Form):
 phone_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
                          message="Not a valid phone number. Try the format 111-111-1111")
 
-year_validator = Regexp('(^$|((\+[0-9]{2})? ?\(?[0-9]{3}\)? ?-?.?[0-9]{3} ?-?.?[0-9]{4}))',
-                         message="Not a valid phone number. Try the format 111-111-1111")
+current_year = datetime.datetime.now().year
 
 
-class ApplicantProfileForm(Form):
+class PrimaryInformationForm(Form):
     dob = DateField('Date of Birth', format='%Y-%m-%d', validators=[InputRequired()])
+    mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator, Length(1, 64)])
+    home_phone = TelField('Home Phone', validators=[phone_validator, Length(0, 64)])
+
+
+class DemographicInformationForm(Form):
     gender = CustomSelectField('Gender', validators=[InputRequired(), Length(1, 64)], choices=
         ['Male', 'Female', 'Trans', 'Non-binary', 'Bigender'], multiple=True)
     ethnicity = CustomSelectField('Ethnicity', validators=[InputRequired(), Length(1, 64)], choices=
-        ['American Indian', 'Asian', 'Black', 'Hispanic or Latino', 'Multiracial','White', 'Decline to Identify'])
-    lgbtq = CustomSelectField('LGBTQ?',  choices=['Yes', 'No', 'Prefer not to answer'])
-    social_media = TextAreaField('Social Media Links',
-                                 description='In the case that we cannot reach you by phone, having your social media '
-                                             'information allows us to contact you if something critical comes up.')
-    mobile_phone = TelField('Mobile Phone', validators=[InputRequired(), phone_validator, Length(1, 64)])
-    home_phone = TelField('Home Phone', validators=[phone_validator, Length(0, 64)])
-    marital_status = CustomSelectField('Marital Status', validators=[InputRequired(), Length(1, 64)], choices=
-        ['Single', 'Married', 'Divorced'])
-    household_status = CustomSelectField('Household Status', validators=[InputRequired(), Length(1, 64)], choices=
-        ['One-person', 'Non-family Household', 'Family Household', 'Married Couple'])
+        ['American Indian', 'Asian', 'Black', 'Hispanic or Latino', 'Multiracial', 'White', 'Decline to Identify'])
+    lgbtq = CustomSelectField('LGBTQ?', choices=['Yes', 'No', 'Prefer not to answer'])
     citizenship_status = CustomSelectField('Citizenship Status', validators=[InputRequired(), Length(1, 64)], choices=
         ['US Citizen'])
+    household_status = CustomSelectField('Household Status', validators=[InputRequired(), Length(1, 64)], choices=
+        ['One-person', 'Non-family Household', 'Family Household', 'Married Couple'])
+    marital_status = CustomSelectField('Marital Status', validators=[InputRequired(), Length(1, 64)], choices=
+        ['Single', 'Married', 'Divorced'])
     work_status = CustomSelectField('Work', validators=[InputRequired(), Length(1, 64)], choices=
         ['Student', 'Full-time Employed', 'Part-time Employed', 'Unemployed'])
+    number_of_children = IntegerField('Number of Children', validators=
+        [InputRequired(), NumberRange(min=0, max=10)], default=0)
+
+
+class GeographicInformationForm(Form):
     street = StringField('Street Address', validators=[InputRequired(), Length(1, 64)])
     city = StringField('City', validators=[InputRequired(), Length(1, 64)])
     state = StringField('State', validators=[InputRequired(), Length(1, 64)])
     zip = StringField('Zip', validators=[InputRequired(), Length(1, 64)])
-    tanf = CustomSelectField('TANF?', choices=['Yes', 'No'], allow_custom=False)
-    etic = CustomSelectField('ETIC?', choices=['Yes', 'No'], allow_custom=False)
-    number_of_children = IntegerField('Number of Children', validators=
-        [InputRequired(), NumberRange(min=0, max=10)], default=0)
-
-    submit = SubmitField('Submit')
 
 
-current_year = datetime.datetime.now().year
-
-
-class EducationProfileForm(Form):
+class EducationInformationForm(Form):
     current_education = SelectField('Education Status', choices=[('high-school', 'Graduating High School Senior'),
         ('college', 'Current or Accepted College, Technical School or Vocational School Student')])
-
     high_school_name = StringField('High School Name', validators=[Length(1, 64)])
     college_name = StringField('College or School Name', validators=[Length(1, 64)])
     degree_program = StringField('Name of Degree Program', validators=[Length(1, 128)])
     graduation_year = IntegerField('Graduation Year', validators=
         [NumberRange(min=current_year, max=current_year+8)], default=current_year+4)
+
+
+class AdditionalInformationForm(Form):
+    social_media = TextAreaField('Social Media Links',
+                                 description='In the case that we cannot reach you by phone, having your social media '
+                                             'information allows us to contact you if something critical comes up.')
+    tanf = CustomSelectField('TANF?', choices=['Yes', 'No'], allow_custom=False)
+    etic = CustomSelectField('ETIC?', choices=['Yes', 'No'], allow_custom=False)
+    extra_information = TextAreaField('Is there anything you would like us to know about you?')
+
+
+class ProfileForm(Form):
+    primary = FormField(PrimaryInformationForm)
+    demographic = FormField(DemographicInformationForm)
+    geographic = FormField(GeographicInformationForm)
+    education = FormField(EducationInformationForm)
+    additional = FormField(AdditionalInformationForm)
     submit = SubmitField('Submit')
 
 
