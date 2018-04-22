@@ -194,7 +194,7 @@ def manage_airtable():
     if site.airtable_html != '':
         form.airtable_html.data = site.airtable_html
     if form.validate_on_submit():
-        site.airtable_html = form.airtable_html.data
+        site.airtable_html = form.airtable_html.raw_data[0]
         db.session.add(site)
         db.session.commit()
     return render_template('admin/manage_airtable.html', form=form)
