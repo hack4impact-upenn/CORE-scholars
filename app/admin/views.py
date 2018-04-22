@@ -3,12 +3,12 @@ from flask_login import current_user, login_required
 from flask_rq import get_queue
 
 from .forms import (ChangeAccountTypeForm, ChangeUserEmailForm, InviteUserForm,
-                    NewUserForm)
+                    NewUserForm, AirtableFormHTML)
 from . import admin
 from .. import db
 from ..decorators import admin_required
 from ..email import send_email
-from ..models import Role, User, EditableHTML
+from ..models import Role, User, EditableHTML, SiteAttributes
 
 
 @admin.route('/')
@@ -183,3 +183,18 @@ def update_editor_contents():
     db.session.commit()
 
     return 'OK', 200
+
+
+@admin.route('/manage_airtable', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def manage_airtable():
+    site = SiteAttributes.query.all()[0]
+    form = AirtableFormHTML()
+    if site.airtable_html != '':
+        form.airtable_html.data = site.airtable_html
+    if form.validate_on_submit():
+        site.airtable_html = form.airtable_html.data
+        db.session.add(site)
+        db.session.commit()
+    return render_template('admin/manage_airtable.html', form=form)

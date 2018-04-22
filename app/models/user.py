@@ -47,9 +47,11 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role \'%s\'>' % self.name
 
+
 module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
  db.Column('module_num', db.Integer, db.ForeignKey('modules.module_num'))
 )
+
 
 class Module(db.Model):
     __tablename__ = 'modules'
@@ -57,6 +59,7 @@ class Module(db.Model):
     certificate_url = db.Column(db.String(256), unique=True)
     module_num = db.Column(db.Integer, index=True, primary_key=True)
     filename = db.Column(db.String(256))
+
 
 class Transactions(db.Model):
     __tablename__ = 'transactions'
@@ -66,10 +69,22 @@ class Transactions(db.Model):
     new_balance = db.Column(db.Integer)
 
 
+class Stage:
+    UNCONFIRMED = 0
+    COMPLETED_EMAIL_CONF = 1
+    COMPLETED_PRIMARY_INFO = 2
+    COMPLETED_PHONE_CONF = 4
+    COMPLETED_PROFILE_FORM = 8
+    COMPLETED_MODULES = 16
+    COMPLETED_BALANCE = 32
+    COMPLETE = 63
+    ARCHIVED = 64
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    confirmed = db.Column(db.Boolean, default=False)
+    stage = db.Column(db.Integer, default=Stage.UNCONFIRMED)
     first_name = db.Column(db.String(64), index=True)
     last_name = db.Column(db.String(64), index=True)
     email = db.Column(db.String(64), unique=True, index=True)
@@ -77,33 +92,13 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
-    dob = db.Column(db.String(64))
-    gender = db.Column(db.String(64))
-    ethnicity = db.Column(db.String(64))
-    lgbtq = db.Column(db.String(64))
-    social_media = db.Column(db.String(360))
     mobile_phone = db.Column(db.String(64))
     home_phone = db.Column(db.String(64))
-    marital_status = db.Column(db.String(64))
-    household_status = db.Column(db.String(64))
-    citizenship_status = db.Column(db.String(64))
-    work_status = db.Column(db.String(64))
+
     street = db.Column(db.String(64))
     city = db.Column(db.String(64))
     state = db.Column(db.String(64))
     zip = db.Column(db.String(64))
-    tanf = db.Column(db.String(64))
-    etic = db.Column(db.String(64))
-    number_of_children = db.Column(db.String(64))
-    extra_information = db.Column(db.String(600))
-
-    current_education = db.Column(db.String(64))
-    high_school_name = db.Column(db.String(64))
-    college_name = db.Column(db.String(64))
-    degree_program = db.Column(db.String(128))
-    graduation_year = db.Column(db.Integer)
-
-    completed_forms = db.Column(db.Boolean, default=False)
 
     bank_balance = db.Column(db.Integer)
     bank_acct_open = db.Column(db.Date)
@@ -133,6 +128,9 @@ class User(UserMixin, db.Model):
     def can(self, permissions):
         return self.role is not None and \
             (self.role.permissions & permissions) == permissions
+
+    def has(self, stage):
+        return (self.stage & stage) != 0x0
 
     def is_admin(self):
         return self.can(Permission.ADMINISTER)
@@ -175,7 +173,7 @@ class User(UserMixin, db.Model):
             return False
         if data.get('confirm') != self.id:
             return False
-        self.confirmed = True
+        self.stage |= Stage.COMPLETED_EMAIL_CONF
         db.session.add(self)
         db.session.commit()
         return True
@@ -236,7 +234,7 @@ class User(UserMixin, db.Model):
                 last_name=fake.last_name(),
                 email=fake.email(),
                 password='password',
-                confirmed=bool(random.getrandbits(1)),
+                stage=random.getrandbits(1),
                 role=choice(roles),
                 **kwargs)
             db.session.add(u)

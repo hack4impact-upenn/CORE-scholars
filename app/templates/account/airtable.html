@@ -1,0 +1,12 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+    <div class="ui text container">
+        <h1>Profile</h1>
+        {{ airtable_html | safe }}
+    </div>
+    <br><br>
+
+    <script src="{{ url_for('static', filename='ckeditor/ckeditor.js') }}"></script>
+{% endblock %}

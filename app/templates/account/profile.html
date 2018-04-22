@@ -4,16 +4,6 @@
 {% block content %}
     <br><br>
     <div class="ui grid container">
-
-        <div class="four wide column">
-            <div class="ui vertical fluid tabular menu">
-                <a class="item active" data-tab="1">Primary</a>
-                <a class="item" data-tab="2">Demographic</a>
-                <a class="item" data-tab="3">Geographic</a>
-                <a class="item" data-tab="4">Education</a>
-                <a class="item" data-tab="5">Additional</a>
-            </div>
-        </div>
         <div class="ten wide computer sixteen wide mobile centered column">
             <h2 class="ui dividing header">Profile</h2>
 
@@ -24,58 +14,25 @@
             } %}
 
             {{ f.begin_form(form, flashes) }}
+                <h4 class="ui block header">
+                  Contact Information
+                </h4>
+                <div class="ui segment">
+                    {{ f.render_form_field(form.primary.mobile_phone, extra_classes='required') }}
+                    {{ f.render_form_field(form.primary.home_phone) }}
+                </div>
+                <h4 class="ui block header">
+                  Geographic Information
+                </h4>
 
-            <div class="ui bottom attached tab active" data-tab="1">
-                {{ f.render_form_field(form.primary.dob, extra_classes='required') }}
-                {{ f.render_form_field(form.primary.mobile_phone, extra_classes='required') }}
-                {{ f.render_form_field(form.primary.home_phone) }}
-            </div>
-            <div class="ui bottom attached tab" data-tab="2">
-                {{ f.render_form_field(form.demographic.gender, extra_classes='required') }}
-                {{ f.render_form_field(form.demographic.ethnicity, extra_classes='required') }}
-                {{ f.render_form_field(form.demographic.lgbtq) }}
-                {{ f.render_form_field(form.demographic.citizenship_status, extra_classes='required') }}
-                {{ f.render_form_field(form.demographic.household_status, extra_classes='required') }}
-                {{ f.render_form_field(form.demographic.marital_status, extra_classes='required') }}
-                {{ f.render_form_field(form.demographic.work_status, extra_classes='required') }}
-                {{ f.render_form_field(form.demographic.number_of_children, extra_classes='required') }}
-            </div>
-            <div class="ui bottom attached tab" data-tab="3">
-                {{ f.render_form_field(form.geographic.street, extra_classes='required') }}
-                {{ f.render_form_field(form.geographic.city, extra_classes='required') }}
-                {{ f.render_form_field(form.geographic.state, extra_classes='required') }}
-                {{ f.render_form_field(form.geographic.zip, extra_classes='required') }}
-            </div>
-            <div class="ui bottom attached tab" data-tab="4">
-                {{ f.render_form_field(form.education.current_education, extra_classes='required') }}
-                {{ f.render_form_field(form.education.high_school_name, extra_classes='required') }}
-                {{ f.render_form_field(form.education.college_name, extra_classes='required') }}
-                {{ f.render_form_field(form.education.degree_program, extra_classes='required') }}
-                {{ f.render_form_field(form.education.graduation_year, extra_classes='required') }}
-            </div>
-            <div class="ui bottom attached tab" data-tab="5">
-                {{ f.render_form_field(form.additional.social_media) }}
-                {{ f.render_form_field(form.additional.tanf, extra_classes='required') }}
-                {{ f.render_form_field(form.additional.etic, extra_classes='required') }}
-                {{ f.render_form_field(form.additional.extra_information) }}
+                <div class="ui segment">
+                    {{ f.render_form_field(form.geographic.street, extra_classes='required') }}
+                    {{ f.render_form_field(form.geographic.city, extra_classes='required') }}
+                    {{ f.render_form_field(form.geographic.state, extra_classes='required') }}
+                    {{ f.render_form_field(form.geographic.zip, extra_classes='required') }}
+                </div>
                 {{ f.render_form_field(form.submit) }}
-            </div>
-
             {{ f.end_form(form) }}
         </div>
     </div>
-    <script>
-        $('.menu .item')
-          .tab()
-        ;
-        $("#education-current_education").parent().change(function() {
-            var selected = $(this).find(":selected").val();
-            console.log(selected)
-            if (selected == 'high-school') {
-                $('#education-high_school_name').parent().show()
-            } else {
-                $('#education-high_school_name').parent().hide()
-            }
-        })
-    </script>
 {% endblock %}

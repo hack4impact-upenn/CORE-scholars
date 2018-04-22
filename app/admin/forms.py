@@ -1,7 +1,7 @@
 from flask_wtf import Form
 from wtforms import ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms.fields import PasswordField, StringField, SubmitField
+from wtforms.fields import PasswordField, StringField, SubmitField, TextAreaField
 from wtforms.fields.html5 import EmailField, DateField
 from wtforms.validators import Email, EqualTo, InputRequired, Length
 
@@ -58,3 +58,13 @@ class NewUserForm(InviteUserForm):
     password2 = PasswordField('Confirm password', validators=[InputRequired()])
 
     submit = SubmitField('Create')
+
+
+class AirtableFormHTML(Form):
+    airtable_html = TextAreaField('Airtable Form', validators=[InputRequired()],
+                                  description= 'Airtable allows you to create a customizable form and access the '
+                                               'responses in the form of a beautiful and powerful spreadsheet. Please '
+                                               'copy and paste the HTML for your embedded form below. This will be the '
+                                               'form that all users must fill out before they can use the application '
+                                               'for the first time.')
+    submit = SubmitField('Submit')
