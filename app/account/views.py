@@ -319,7 +319,7 @@ def random_with_n_digits(n):
 @login_required
 def primary_information():
     form = ProfileForm()
-    if current_user.completed_forms:
+    if current_user.has(Stage.COMPLETED_PRIMARY_INFO):
         # Primary Information
         form.primary.mobile_phone.data = current_user.mobile_phone
         form.primary.home_phone.data = current_user.home_phone
@@ -339,7 +339,7 @@ def primary_information():
         current_user.city = form.geographic.city.data
         current_user.state = form.geographic.state.data
         current_user.zip = form.geographic.zip.data
-        current_user.completed_forms = True
+        current_user.stage |= Stage.COMPLETED_PRIMARY_INFO
 
         db.session.add(current_user)
         db.session.commit()
