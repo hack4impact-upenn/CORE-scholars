@@ -5,15 +5,16 @@
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>CORE Scholars</title>
     <link href="style/semantic.min.css" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="style/semantic.min.js" type="application/javascript"></script>
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-    <script rel="stylesheet" type="text/javascript">
-    </script>
     <style>
         .menu > * {
             font-family: Montserrat;
             font-style: normal;
             font-size:15px;
             font-weight: 600;
+            font-size: 11px;
             line-height: normal;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -46,6 +47,40 @@
         }
         .header-summary-query {
             color: ghostwhite;
+        }
+        .header-modules {
+            font-family: Montserrat;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+            font-size: 11px;
+            text-align: left;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8F8F8F;
+            display: inline;
+        }
+        .ui.popup {
+            font-family: Montserrat;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #FFFFFF;
+        }
+        .module-segment > div > span {
+            height: 15px;
+            font-family: Montserrat;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+            font-size: 12px !important;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #575757;
+            margin-left:30px;
         }
     </style>
 </head>
@@ -91,5 +126,87 @@
             </div>
             <div class="three wide column"></div>
         </div>
+        <div class="row">
+            <div class="three wide column"></div>
+            <div class="three wide column">
+                <h4 class="ui header-modules">Modules </h4>
+                <i class="info circle icon" data-content="Instructions coming soon!"></i>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input1" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 1</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input2" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 2</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input3" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 3</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input4" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 4</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input5" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 5</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input6" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 6</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input7" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 7</span>
+                    </div>
+                </div>
+                <div class="ui segment module-segment">
+                    <div class="ui checkbox module">
+                        <input type="file" class="file_input8" hidden>
+                        <label data-content="Upload a file." class="module1-checkbox"></label>
+                        <span>Module 8</span>
+                    </div>
+                </div>
+                <script type="application/javascript">
+                    $('.checkbox.module>label').popup({
+                        on: 'hover',
+                        variation: 'inverted',
+                        distanceAway: 0,
+                        offset: -6,
+                    });
+                    $('.module1-checkbox').click(function(event) {
+                        $('.file_input1').click();
+                    })
+
+                </script>
+            </div>
+            <div class="seven wide column">
+                <div class="ui segment"></div>
+            </div>
+            <div class="three wide column">
+
+            </div>
+        </div>
     </div>
+</body>
 </html>
