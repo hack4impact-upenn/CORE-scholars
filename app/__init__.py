@@ -11,6 +11,8 @@ from flask_rq import RQ
 from config import config
 from .assets import app_css, app_js, vendor_css, vendor_js
 
+from .jobs import savings_reminder, rq
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 mail = Mail()
@@ -39,6 +41,8 @@ def create_app(config_name):
     csrf.init_app(app)
     compress.init_app(app)
     RQ(app)
+    savings_reminder.cron('* * * * *', 'savings reminder', queue='high', timeout=55)
+    rq.init_app(app)
 
     # Register Jinja template functions
     from .utils import register_template_utils
