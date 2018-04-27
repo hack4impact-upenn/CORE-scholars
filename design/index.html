@@ -35,6 +35,18 @@
             text-transform: uppercase;
             color: #8F8F8F;
         }
+        .header-modules {
+            font-family: Montserrat;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+            font-size: 11px;
+            text-align: left;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #8F8F8F;
+            display: inline;
+        }
         .header-summary {
             font-family: Montserrat;
             font-style: normal;
@@ -81,6 +93,65 @@
             text-transform: uppercase;
             color: #575757;
             margin-left:30px;
+        }
+        .account-balance-left {
+            font-family: Montserrat;
+            font-style: thin, normal;
+            font-weight: 300;
+            line-height: 22px;
+            font-size: 18px;
+            text-align: left;
+            letter-spacing: 0.3px;
+            color: #8F8F8F;
+        }
+        .account-balance-left-query {
+            color: black;
+        }
+        .account-balance-input {
+            font-family: Montserrat;
+            font-style: thin;
+            font-size: 42px;
+            line-height: 51px;
+            text-align: left;
+            padding-left: 30px !important;
+
+        }
+        .test {
+            position: relative;
+            display: inline;
+        }
+        .test:before {
+            content: '$';
+            position: absolute;
+            font-style: thin;
+            font-size: 42px;
+            line-height: 51px;
+            text-align: left;
+            top:8px;
+        }
+        .cursor {
+            position: relative;
+        }
+        .cursor j {
+            position: absolute;
+            width: 1px;
+            height: 80%;
+            background-color: gray;
+            left: 30px;
+            top: 10%;
+            animation-name: blink;
+            animation-duration: 800ms;
+            animation-iteration-count: infinite;
+            opacity: 1;
+        }
+
+        .cursor input:focus + j {
+            display: none;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
     </style>
 </head>
@@ -187,6 +258,37 @@
                         <span>Module 8</span>
                     </div>
                 </div>
+
+            </div>
+            <script type="text/javascript">
+            function hideDiv() {
+                document.getElementById("cursor").style.display = "none";
+            }
+            </script>
+            <div class="seven wide column">
+                <h4 class="ui header-modules">Current Balance</h4>
+                <div class="ui raised segment" style="height:250px">
+                <div class="ui grid">
+                    <div class="two column row">
+                        <div class="column">
+                            <div class = "cursor">
+                                <div class="ui massive icon input">
+                                    <div class="test"><input type="text" class="account-balance-input" placeholder="248.62" onkeypress="hideDiv()"> </span> </div>
+                                    <j></j>
+                                    <i class="check circle large green icon"></i>
+                                </div> 
+                            </div> 
+                        </div>
+                    </div>
+
+   
+                </div>
+                <br/>
+                <br/>
+                 <p class="ui account-balance-left"><span class="account-balance-left-query">$248.62</span> left to $500</p>
+                 <div class="ui red progress">
+                        <div class="bar"></div>
+                    </div>
                 <script type="application/javascript">
                     $('.checkbox.module>label').popup({
                         on: 'hover',
@@ -200,12 +302,9 @@
 
                 </script>
             </div>
-            <div class="seven wide column">
-                <div class="ui segment"></div>
-            </div>
-            <div class="three wide column">
-
-            </div>
+            
+            
+            <div class="two wide column"></div>
         </div>
     </div>
 </body>
