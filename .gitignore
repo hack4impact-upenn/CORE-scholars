@@ -67,7 +67,7 @@ local_settings.py
 instance/
 .webassets-cache
 
-webassets-external/
+#webassets-external/
 
 .idea/
 
