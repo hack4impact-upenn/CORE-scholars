@@ -1,4 +1,4 @@
-from flask import abort, flash, redirect, render_template, url_for, request
+from flask import abort, flash, redirect, render_template, url_for, request, current_app
 from flask_login import current_user, login_required
 from flask_rq import get_queue
 
@@ -109,6 +109,7 @@ def send_message(user_id):
             to=user.mobile_phone,
             from_=current_app.config["TWILIO_PHONE_NUMBER"],
             body=form.message.data)
+        flash('Your message has been sent.', 'success')
         return redirect(url_for('admin.user_info', user_id=user_id))
     return render_template('admin/manage_user.html', user=user, form=form)
 
