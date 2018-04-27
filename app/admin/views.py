@@ -95,6 +95,14 @@ def user_info(user_id):
     return render_template('admin/manage_user.html', user=user)
 
 
+@admin.route('/user/<int:user_id>/send-message', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def send_message(user_id):
+    form = SendMessageForm()
+    if form.validate_on_submit():
+        
+
 @admin.route('/user/<int:user_id>/change-email', methods=['GET', 'POST'])
 @login_required
 @admin_required
