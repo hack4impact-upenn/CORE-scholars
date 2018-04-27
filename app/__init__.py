@@ -11,6 +11,7 @@ from flask_rq import RQ
 from config import config
 from .assets import app_css, app_js, vendor_css, vendor_js
 
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 mail = Mail()
@@ -39,6 +40,8 @@ def create_app(config_name):
     csrf.init_app(app)
     compress.init_app(app)
     RQ(app)
+    from jobs import rq
+    rq.init_app(app)
 
     # Register Jinja template functions
     from .utils import register_template_utils

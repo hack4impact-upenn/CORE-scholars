@@ -10,6 +10,7 @@ from rq import Connection, Queue, Worker
 
 from app import create_app, db
 from app.models import Role, User, SiteAttributes, Stage
+import logging
 
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
@@ -69,6 +70,15 @@ def setup_dev():
 def setup_prod():
     """Runs the set-up needed for production."""
     setup_general()
+
+
+@manager.command
+def setup_cron():
+    """Starts Cron jobs"""
+    from app.jobs import savings_reminder
+    savings_reminder.cron('* * * * *', 'savings reminder', queue='high', timeout=120)
+    print('here1')
+    logging.error('here2')
 
 
 def setup_general():

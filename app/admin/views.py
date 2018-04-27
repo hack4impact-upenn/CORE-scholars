@@ -1,14 +1,16 @@
-from flask import abort, flash, redirect, render_template, url_for, request
+from flask import abort, flash, redirect, render_template, url_for, request, current_app
 from flask_login import current_user, login_required
 from flask_rq import get_queue
 
 from .forms import (ChangeAccountTypeForm, ChangeUserEmailForm, InviteUserForm,
-                    NewUserForm, AirtableFormHTML)
+                    NewUserForm, AirtableFormHTML, SendMessageForm)
 from . import admin
 from .. import db
 from ..decorators import admin_required
 from ..email import send_email
 from ..models import Role, User, EditableHTML, SiteAttributes
+
+from twilio.rest import Client
 
 
 @admin.route('/')
@@ -94,6 +96,22 @@ def user_info(user_id):
         abort(404)
     return render_template('admin/manage_user.html', user=user)
 
+
+@admin.route('/user/<int:user_id>/send-message', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def send_message(user_id):
+    form = SendMessageForm()
+    user = User.query.filter_by(id=user_id).first()
+    if form.validate_on_submit():
+        client = Client(current_app.config["TWILIO_ACCOUNT_SID"], current_app.config["TWILIO_AUTH_TOKEN"])
+        client.api.account.messages.create(
+            to=user.mobile_phone,
+            from_=current_app.config["TWILIO_PHONE_NUMBER"],
+            body=form.message.data)
+        flash('Your message has been sent.', 'success')
+        return redirect(url_for('admin.user_info', user_id=user_id))
+    return render_template('admin/manage_user.html', user=user, form=form)
 
 @admin.route('/user/<int:user_id>/change-email', methods=['GET', 'POST'])
 @login_required

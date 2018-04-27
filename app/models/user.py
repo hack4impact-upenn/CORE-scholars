@@ -7,6 +7,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .. import db, login_manager
 
 import random
+import datetime
 
 
 class Permission:
@@ -236,6 +237,11 @@ class User(UserMixin, db.Model):
                 password='password',
                 stage=random.getrandbits(1),
                 role=choice(roles),
+                mobile_phone='6307961737',
+                bank_balance=0,
+                savings_start_date=datetime.date(2018, 4, 1),
+                savings_end_date=datetime.date(2018, 4, 30),
+                goal_amount=100,
                 **kwargs)
             db.session.add(u)
             try:

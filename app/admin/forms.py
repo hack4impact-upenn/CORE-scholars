@@ -68,3 +68,8 @@ class AirtableFormHTML(Form):
                                                'form that all users must fill out before they can use the application '
                                                'for the first time.')
     submit = SubmitField('Submit')
+
+
+class SendMessageForm(Form):
+    message = TextAreaField('Message', validators=[InputRequired()])
+    submit = SubmitField('Send')
