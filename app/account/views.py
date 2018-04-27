@@ -42,7 +42,7 @@ def index():
     else:
         goal_balance = min(current_user.goal_amount, float(current_user.goal_amount)*(datetime_date.today()-current_user.savings_start_date).days/(current_user.savings_end_date-current_user.savings_start_date).days)
         goal_balance = round(goal_balance, 2)
-    return render_template('account/index.html', user=current_user, goal_balance=goal_balance, update_form=form)
+    return render_template('account/index.html', modules={module.module_num:module for module in current_user.modules})
 
 
 @account.route('/login', methods=['GET', 'POST'])
