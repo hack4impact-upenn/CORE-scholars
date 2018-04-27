@@ -502,6 +502,12 @@ def sign_s3():
         'url': 'https://%s.amazonaws.com/%s/json/%s' % (S3_REGION, S3_BUCKET, file_name)
         })
 
+@account.route('/about')
+@login_required
+def about():
+    editable_html_obj = EditableHTML.get_editable_html('about')
+    return render_template('account/about.html',
+                           editable_html_obj=editable_html_obj) 
 
 @account.route('/resources')
 @login_required

@@ -93,6 +93,65 @@
 
             color: #575757;
         }
+        .account-balance-left {
+            font-family: Montserrat;
+            font-style: thin, normal;
+            font-weight: 300;
+            line-height: 22px;
+            font-size: 18px;
+            text-align: left;
+            letter-spacing: 0.3px;
+            color: #8F8F8F;
+        }
+        .account-balance-left-query {
+            color: black;
+        }
+        .account-balance-input {
+            font-family: Montserrat;
+            font-style: thin;
+            font-size: 42px;
+            line-height: 51px;
+            text-align: left;
+            padding-left: 30px !important;
+
+        }
+        .test {
+            position: relative;
+            display: inline;
+        }
+        .test:before {
+            content: '$';
+            position: absolute;
+            font-style: thin;
+            font-size: 42px;
+            line-height: 51px;
+            text-align: left;
+            top:8px;
+        }
+        .cursor {
+            position: relative;
+        }
+        .cursor j {
+            position: absolute;
+            width: 1px;
+            height: 80%;
+            background-color: gray;
+            left: 30px;
+            top: 10%;
+            animation-name: blink;
+            animation-duration: 800ms;
+            animation-iteration-count: infinite;
+            opacity: 1;
+        }
+
+        .cursor input:focus + j {
+            display: none;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -100,11 +159,13 @@
         <div class="row">
             <div class="one wide column"></div>
             <div class="fourteen wide column">
-                <div class="ui three item text massive menu">
-                    <a class="active item">ABOUT</a>
+                <div class="ui five item text massive menu">
+                    <a class="active item" href = "/account/about">ABOUT</a>
+                    <a class="active item" href = "/account/resources">RESOURCES</a>
                     <div class="item">
                         <img class="ui tiny image" src="{{ url_for('static', filename='images/core.png') }}" />
                     </div>
+                    <div class = "item"></div>
                     <a class="item">
                         <svg width="34" height="34" viewBox="0 0 34 34" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                             <g id="Canvas" fill="none">
@@ -174,11 +235,44 @@
                 </script>
             </div>
             <div class="seven wide column">
-                <div class="ui segment"></div>
-            </div>
-            <div class="three wide column">
+                <h4 class="ui header-modules">Current Balance</h4>
+                <div class="ui raised segment" style="height:250px">
+                <div class="ui grid">
+                    <div class="two column row">
+                        <div class="column">
+                            <div class = "cursor">
+                                <div class="ui massive icon input">
+                                    <div class="test"><input type="text" class="account-balance-input" placeholder="248.62" onkeypress="hideDiv()"> </span> </div>
+                                    <j></j>
+                                    <i class="check circle large green icon"></i>
+                                </div> 
+                            </div> 
+                        </div>
+                    </div>
 
+   
+                </div>
+                <br/>
+                <br/>
+                 <p class="ui account-balance-left"><span class="account-balance-left-query">$248.62</span> left to $500</p>
+                 <div class="ui red progress">
+                        <div class="bar"></div>
+                    </div>
+                <script type="application/javascript">
+                    $('.checkbox.module>label').popup({
+                        on: 'hover',
+                        variation: 'inverted',
+                        distanceAway: 0,
+                        offset: -6,
+                    });
+                    $('.module1-checkbox').click(function (event) {
+                        $('.file_input1').click();
+                    })
+                </script>
             </div>
+            
+            
+            <div class="two wide column"></div>
         </div>
     </div>
 
