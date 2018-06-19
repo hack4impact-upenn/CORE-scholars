@@ -46,20 +46,23 @@
                             <th>Email address</th>
                             <th>Account type</th>
                             <th>Confirmed</th>
+                            <th>Account Balance</th>
                         </tr>
                     </thead>
                     <tbody>
                     {% for u in users | sort(attribute='last_name') %}
                         <tr onclick="window.location.href = '{{ url_for('admin.user_info', user_id=u.id) }}';">
-
                             <td>{{ u.first_name }}</td>
                             <td>{{ u.last_name }}</td>
                             <td>{{ u.email }}</td>
                             <td class="user role">{{ u.role.name }}</td>
                             <td>{{ u.confirmed }}</td>
+                            <td><a class="ui basic red button" href="{{ url_for('admin.link_bank', user_id=u.id) }}">
+                                Link Bank Account
+                            </a></td>
                         </tr>
                     {% endfor %}
-                    </tbody>
+                    </tbody>/link-bank
                 </table>
             </div>
         </div>

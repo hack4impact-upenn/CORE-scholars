@@ -31,3 +31,9 @@ class SiteAttributes(db.Model):
         entry = SiteAttributes(airtable_html=str())
         db.session.add(entry)
         db.session.commit()
+
+
+class PlaidBankAccount(db.Model):
+    item_id = db.Column(db.Integer, primary_key=True)
+    access_token = db.Column(db.String)
+

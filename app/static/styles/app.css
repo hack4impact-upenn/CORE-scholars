@@ -23,3 +23,15 @@ nav .mobile.only.row .ui.vertical.menu {
 table.selectable tr:hover {
   cursor: pointer !important;
 }
+
+.menu > .core-item {
+    font-family: Montserrat;
+    font-style: normal;
+    font-size:15px;
+    font-weight: 600;
+    font-size: 11px;
+    line-height: normal;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8F8F8F !important;
+}

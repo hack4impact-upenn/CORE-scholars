@@ -1,4 +1,5 @@
-from flask import render_template, request
+from flask import render_template, request, redirect, url_for
+from flask_login import current_user
 from ..models import EditableHTML
 
 from . import main
@@ -6,7 +7,11 @@ from . import main
 
 @main.route('/')
 def index():
-    return render_template('main/index.html')
+	if current_user.is_authenticated:
+		return redirect(url_for('account.index'))
+	else:
+		return redirect(url_for('account.login'))
+    
 
 
 @main.route('/about')

@@ -28,7 +28,6 @@ import random
 @account.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    print(current_user.is_authenticated)
     form = SavingsUpdateForm()
     if form.validate_on_submit():
         savings = SavingsHistory(date=datetime_date.today(), balance = form.balance.data, user_id=current_user.id)
@@ -45,7 +44,8 @@ def index():
     modules = {module.module_num:module for module in current_user.modules}
     modules_left = 8 - len(current_user.modules)
     balance_left = 500.00 - current_user.bank_balance
-    return render_template('account/index.html', modules=modules, modules_left=modules_left, balance_left=balance_left)
+    str_format = lambda x: '{0:.2f}'.format(x)
+    return render_template('account/index.html', modules=modules, modules_left=modules_left, balance_left=balance_left, str_format=str_format)
 
 
 @account.route('/login', methods=['GET', 'POST'])
@@ -410,6 +410,18 @@ def modules_update():
         current_user.modules.append(module)
     db.session.commit()
     flash('Your progress has been updated.', 'success')
+    return jsonify({'status': 200})
+
+
+@account.route('/balance-update', methods=['GET', 'POST'])
+@login_required
+@csrf.exempt
+def balance_update():
+    balance = json.loads(request.form['balance'])
+    current_user.bank_balance = balance
+    db.session.add(current_user)
+    db.session.commit()
+    flash('Your balance has been updated.', 'success')
     return jsonify({'status': 200})
 
 
