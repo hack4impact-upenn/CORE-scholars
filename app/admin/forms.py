@@ -1,12 +1,12 @@
 from flask_wtf import Form
 from wtforms import ValidationError
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms.fields import PasswordField, StringField, SubmitField, TextAreaField
+from wtforms.fields import PasswordField, StringField, SubmitField, TextAreaField, SelectField
 from wtforms.fields.html5 import EmailField, DateField
 from wtforms.validators import Email, EqualTo, InputRequired, Length
 
 from .. import db
-from ..models import Role, User
+from ..models import Role, User, PlaidBankAccount
 
 
 class ChangeUserEmailForm(Form):
@@ -26,6 +26,12 @@ class ChangeAccountTypeForm(Form):
         get_label='name',
         query_factory=lambda: db.session.query(Role).order_by('permissions'))
     submit = SubmitField('Update role')
+
+
+class LinkBankAccount(Form):
+    # account_owner = SelectField('Admin Account', validators=[InputRequired()])
+    bank_item = SelectField('Bank Account')
+    submit = SubmitField('Update Bank Account')
 
 
 class InviteUserForm(Form):

@@ -1,25 +1,15 @@
-import os
-import plaid
 from flask import abort, flash, redirect, render_template, url_for, request, jsonify
 from flask_login import current_user, login_required
 from flask_rq import get_queue
 
 from .forms import (ChangeAccountTypeForm, ChangeUserEmailForm, InviteUserForm,
-                    NewUserForm, AirtableFormHTML)
+                    NewUserForm, AirtableFormHTML, LinkBankAccount)
 from . import admin
 from .. import db, csrf
 from ..decorators import admin_required
 from ..email import send_email
-from ..models import Role, User, EditableHTML, SiteAttributes, PlaidBankAccount
-
-PLAID_CLIENT_ID = os.getenv('PLAID_CLIENT_ID')
-PLAID_SECRET = os.getenv('PLAID_SECRET')
-PLAID_PUBLIC_KEY = os.getenv('PLAID_PUBLIC_KEY')
-PLAID_ENV = os.getenv('PLAID_ENV', 'sandbox')
-
-plaid_client = plaid.Client(client_id=PLAID_CLIENT_ID, secret=PLAID_SECRET,
-                            public_key=PLAID_PUBLIC_KEY, environment=PLAID_ENV)
-
+from ..models import Role, User, EditableHTML, SiteAttributes, PlaidBankAccount, PlaidBankItem
+from config import Config
 
 @admin.route('/')
 @login_required
@@ -147,6 +137,29 @@ def change_account_type(user_id):
     return render_template('admin/manage_user.html', user=user, form=form)
 
 
+@admin.route('/user/<int:user_id>/link-bank-account', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def link_bank_account(user_id):
+    """Link a users' bank account"""
+    user = User.query.get(user_id)
+    if user is None:
+        abort(404)
+    form = LinkBankAccount()
+    # form.account_owner.choices = [(acct.item_id, acct.name) for acct in PlaidBankAccount.query.all()]
+    PlaidBankAccount.update_all_items()
+    items = PlaidBankItem.query.filter_by(is_open=True).all()
+    form.bank_item.choices = [(item.item_id, item.get_display_name()) for item in items]
+    if form.validate_on_submit():
+        item_id = form.bank_item.data
+        user.bank_item = PlaidBankItem.query.filter_by(item_id=item_id).first()
+        db.session.add(user)
+        db.session.commit()
+        flash('Bank account for user {} successfully updated to {}.'
+              .format(user.full_name(), user.bank_item.get_display_name()), 'form-success')
+    return render_template('admin/manage_user.html', user=user, form=form)
+
+
 @admin.route('/user/<int:user_id>/delete')
 @login_required
 @admin_required
@@ -213,21 +226,33 @@ def manage_airtable():
 @admin.route('/link-bank', methods=['GET'])
 @login_required
 @admin_required
-def link_bank(user_id):
-    return render_template('admin/link_bank.html',
-                           plaid_public_key=PLAID_PUBLIC_KEY,
-                           plaid_environment=PLAID_ENV,
-                           bank_accounts=PlaidBankAccount.query.all(),
-                           user_id=user_id)
+def link_admin_bank():
+    PlaidBankAccount.update_all_items()
+    bank_accounts = PlaidBankAccount.query.all()
+    bank_items = [account.items for account in bank_accounts]
+    return render_template('admin/link_bank.html', config=Config, bank_accounts=bank_accounts, bank_items=bank_items)
 
 
-@admin.route("/get_access_token", methods=['POST'])
+@admin.route('/bank/<int:bank_id>/update-account-name', methods=['GET'])
+def change_admin_account_name(bank_id):
+    bank_account = PlaidBankAccount.query.filter_by(id=bank_id).first()
+    if bank_account is None:
+        abort(404)
+    bank_account.name = request.args.get('new-name')
+    db.session.add(bank_account)
+    db.session.commit()
+    flash('Updated bank account name')
+    return redirect(url_for('admin.link_admin_bank'))
+
+
+@admin.route("/get-access-token", methods=['POST'])
 @csrf.exempt
 def get_access_token():
     public_token = request.form['public_token']
-    exchange_response = plaid_client.Item.public_token.exchange(public_token)
+    exchange_response = PlaidBankAccount.get_plaid_client().Item.public_token.exchange(public_token)
     new_bank_account = PlaidBankAccount(
         item_id=exchange_response['item_id'],
         access_token=exchange_response['access_token'])
     db.session.add(new_bank_account)
     db.session.commit()
+    return redirect(url_for('admin.link_admin_bank'))

@@ -91,6 +91,8 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    bank_item_id = db.Column(db.Integer, db.ForeignKey('bank_items.id'))
+    bank_item = db.relationship('PlaidBankItem', backref=db.backref('scholar', uselist=False))
 
     mobile_phone = db.Column(db.String(64))
     home_phone = db.Column(db.String(64))

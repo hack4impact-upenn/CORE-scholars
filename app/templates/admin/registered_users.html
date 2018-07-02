@@ -57,12 +57,10 @@
                             <td>{{ u.email }}</td>
                             <td class="user role">{{ u.role.name }}</td>
                             <td>{{ u.confirmed }}</td>
-                            <td><a class="ui basic red button" href="{{ url_for('admin.link_bank', user_id=u.id) }}">
-                                Link Bank Account
-                            </a></td>
+                            <td>{% if u.bank_item %}${{u.bank_item.balance}}{% endif %}</td>
                         </tr>
                     {% endfor %}
-                    </tbody>/link-bank
+                    </tbody>
                 </table>
             </div>
         </div>

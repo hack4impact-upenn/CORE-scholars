@@ -10,9 +10,9 @@ else:
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-if os.path.exists('config.env'):
+if os.path.exists(os.path.join(basedir, '.env')):
     print('Importing environment from .env file')
-    for line in open('config.env'):
+    for line in open(os.path.join(basedir, '.env')):
         var = line.strip().split('=')
         if len(var) == 2:
             os.environ[var[0]] = var[1].replace("\"", "")
@@ -39,6 +39,11 @@ class Config:
     TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID')
     TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN')
     TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER')
+
+    PLAID_CLIENT_ID = os.environ.get('PLAID_CLIENT_ID')
+    PLAID_SECRET = os.environ.get('PLAID_SECRET')
+    PLAID_PUBLIC_KEY = os.environ.get('PLAID_PUBLIC_KEY')
+    PLAID_ENV = os.environ.get('PLAID_ENV', 'sandbox')
 
     # Analytics
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or ''

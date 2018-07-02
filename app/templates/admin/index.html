@@ -27,16 +27,22 @@
                 Admin Dashboard
             </h2>
             <div class="ui two column stackable grid">
-                {{ dashboard_option('Registered Users', 'admin.registered_users',
+                {{ dashboard_option('Scholars', 'admin.registered_users',
                                     description='View and manage user accounts', icon='users icon') }}
-                {{ dashboard_option('Add New User', 'admin.new_user',
-                                    description='Create a new user account', icon='add user icon') }}
-                {{ dashboard_option('Invite New User', 'admin.invite_user',
-                                    description='Invites a new user to create their own account', icon='add user icon') }}
-                {{ dashboard_option('Manage Airtable', 'admin.manage_airtable',
-                                    description='Manage airtable', icon='table icon') }}
-                {{ dashboard_option('Link Bank Account', 'admin.link_bank',
+                {{ dashboard_option('New User', 'admin.invite_user',
+                                    description='Invites a new user to create their own account, scholars and admins alike', icon='add user icon') }}
+                {{ dashboard_option('Airtable', 'admin.manage_airtable',
+                                    description='Portal to Airtable', icon='table icon') }}
+                {{ dashboard_option('Admin Bank Accounts', 'admin.link_admin_bank',
                                     description='Link bank account for accessing student balances', icon='money bill alternate outline icon') }}
+                {{ dashboard_option('SMS Reminders', 'admin.link_admin_bank',
+                                    description='SMS Reminders', icon='phone icon') }}
+                {{ dashboard_option('Resources', 'account.resources',
+                                    description='Resources', icon='edit outline icon') }}
+                {{ dashboard_option('About', 'account.about',
+                                    description='About', icon='edit outline icon') }}
+                {{ dashboard_option('Student View', 'account.index',
+                                    description='Student view of the application', icon='expand icon') }}
             </div>
         </div>
     </div>

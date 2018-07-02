@@ -8,16 +8,34 @@
 {% block content %}
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script> -->
     <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <style>
+        .account-name {
+            display: inline;
+            border: 0.5px solid transparent;
+            border-radius: 3px;
+        }
+    </style>
+    <script>
+    function editAccountName(id) {
+        var control = $('#edit-account-name-'+id);
+        var element = $('#account-name-'+id);
+        if (control.text() == 'save') {
+            var qs = $.param({'new-name': element.text()})
+            window.location.replace("/admin/bank/" + id + "/update-account-name?" + qs);
+        }
+        control.addClass('green');
+        control.text('save');
+        element.attr('contenteditable', 'true');
+        element.css('border-color', 'grey');
+    }
+    </script>
     <div class="ui stackable centered grid container">
         <div class="twelve wide column">
             <a class="ui basic compact button" href="{{ url_for('admin.index') }}">
                 <i class="caret left icon"></i>
                 Back to dashboard
             </a>
-            <h2 class="ui header">
-                Link Bank Account
-                <div class="sub header">Link bank account to access student balances</div>
-            </h2>
+            <button id="link-btn" class="ui inverted red compact button">Link Bank Account</button>
 
             {% set flashes = {
                 'error':   get_flashed_messages(category_filter=['form-error']),
@@ -27,51 +45,67 @@
             } %}
 
             <!-- TODO: Link Plaid -->
-            <button id="link-btn" class="ui primary button">Link Bank Account</button>
+
             <br/><br/>
-            <div id="app"> 
-                <div class="box">
-                    <button class="ui primary button" id="get-accounts-btn">Get Accounts</button>
-                <div id="get-accounts-data"></div>
+            <div>
+                {% for i in range(bank_accounts|length) %}
+                    {% set id = bank_accounts[i].id %}
+                    <div class="ui segment">
+                        <div>
+                            <h2 class="account-name" id="account-name-{{id}}">{{ bank_accounts[i].name }}</h2>
+                            <a class="ui large label" id="edit-account-name-{{id}}" onclick="editAccountName({{id}})">edit</a>
+                        </div>
+                        <div class="ui divider"></div>
+                        <div class="ui three column grid">
+                            {% for item in bank_items[i] %}
+                                <div class="column">
+                                    <div class="ui segment">
+                                        {% if not item.is_open %}
+                                            <span class="ui red label">Expired</span>
+                                        {% endif %}
+                                        <strong>{{ item.official_name }}</strong>
+                                        <div>
+                                            <span>Balance: ${{ item.balance }}</span>
+                                        </div>
+                                        <div>
+                                            <span>{{ item.subtype.title() }} {{ item.mask }}</span>
+                                        </div>
+                                        {% if item.scholar %}
+                                            <br/>
+                                            <span class="ui basic label">{{ item.scholar.full_name() }}</span>
+                                        {% endif %}
+                                        <br>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+                {% if bank_accounts|length == 0 %}
+                    <h3>Nothing to show here. Please click "Link Bank Account" above</h3>
+                    <img src="{{url_for('static', filename='images/sad-dog.jpg')}}">
+                {% endif %}
             </div>
-
-
             <script>
             (function($) {
                 var handler = Plaid.create({
                     apiVersion: 'v2',
-                    clientName: 'Plaid Walkthrough Demo',
-                    env: '{{ plaid_environment }}',
+                    clientName: 'Core Scholars x Hack4Impact',
+                    env: '{{ config.PLAID_ENV }}',
                     product: ['transactions'],
-                    key: '{{ plaid_public_key }}',
+                    key: '{{ config.PLAID_PUBLIC_KEY }}',
                     onSuccess: function(public_token) {
-                        $.post('/admin/get_access_token', {public_token: public_token}, function() {
+                        $.post('/admin/get-access-token', {public_token: public_token}, function() {
                             $('#container').fadeOut('fast', function() {
                                 $('#intro').hide();
                                 $('#app, #steps').fadeIn('slow');
                             });
                         });
+                        location.reload();
                     },
                 });
-
                 $('#link-btn').on('click', function(e) {
                     handler.open();
-                });
-                $('#get-accounts-btn').on('click', function(e) {
-                    $.get('/accounts', function(data) {
-                        $('#get-accounts-data').slideUp(function() {
-                            var html = '';
-                            data.accounts.forEach(function(account, idx) {
-                                html += '<div class="inner">';
-                                html += '<strong>' + account.name +
-                                        ' $' + (account.balances.available != null ? account.balances.available : account.balances.current) + '</strong><br>';
-                                html += account.subtype + ' ' + account.mask;
-                                html += '</div>';
-                            });
-
-                            $(this).html(html).slideDown();
-                        });
-                    });
                 });
             })(jQuery);
             </script>

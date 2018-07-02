@@ -1,12 +1,14 @@
 {% extends 'layouts/base.html' %}
 {% import 'macros/form_macros.html' as f %}
 
+{% set bank_endpoint = 'admin.link_bank_account' %}
 {% set deletion_endpoint = 'admin.delete_user_request' %}
 
 {% set endpoints = [
     ('admin.user_info', 'User information'),
     ('admin.change_user_email', 'Change email address'),
     ('admin.change_account_type', 'Change account type'),
+    (bank_endpoint, 'Link Bank Account'),
     (deletion_endpoint, 'Delete user')
 ] %}
 
@@ -74,6 +76,10 @@
                     {{ f.render_form(form) }}
                 {% else %}
                     {{ user_info(user) }}
+                {% endif %}
+                <!-- Plaid Handler -->
+                {% if request.endpoint == bank_endpoint %}
+
                 {% endif %}
             </div>
         </div>

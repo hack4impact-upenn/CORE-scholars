@@ -7,11 +7,13 @@ from . import main
 
 @main.route('/')
 def index():
-	if current_user.is_authenticated:
-		return redirect(url_for('account.index'))
-	else:
-		return redirect(url_for('account.login'))
-    
+    if current_user.is_authenticated:
+        if current_user.is_admin():
+            return redirect(url_for('admin.index'))
+        else:
+            return redirect(url_for('account.index'))
+    else:
+        return redirect(url_for('account.login'))
 
 
 @main.route('/about')
@@ -19,4 +21,3 @@ def about():
     editable_html_obj = EditableHTML.get_editable_html('about')
     return render_template('main/about.html',
                            editable_html_obj=editable_html_obj)
-
