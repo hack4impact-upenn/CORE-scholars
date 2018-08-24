@@ -1,0 +1,22 @@
+{% import 'macros/page_macros.html' as page %}
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+    {% if current_user.is_admin() %}
+    <div class="ui stackable centered grid container">
+        <div class="twelve wide column">
+            <a class="ui basic compact button" href="{{ url_for('admin.index') }}">
+                <i class="caret left icon"></i>
+                Back to dashboard
+            </a>
+            <button class="ui basic compact button start-edit">Edit</button>
+            <button class="ui basic compact primary button end-edit">Save</button>
+        </div>
+    </div>
+    <br/>
+    {% endif %}
+    <div class="ui text container">
+        {{ page.render_inline_editor(editable_html_obj, current_user) }}
+    </div>
+    <script src="{{ url_for('static', filename='ckeditor/ckeditor.js') }}"></script>
+{% endblock %}

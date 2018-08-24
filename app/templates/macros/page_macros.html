@@ -3,15 +3,6 @@
         {{ editable_html_obj.value|safe }}
     </div>
 
-    {% if current_user.is_admin() %}
-       <button class="ui button start-edit">
-        Edit
-       </button>
-       <button class="ui primary button end-edit">
-        Save
-       </button>
-    {% endif %}
-
     <script>
     var editorIDName = "editor-{{ editable_html_obj.editor_name }}";
     $(document).ready(function() {

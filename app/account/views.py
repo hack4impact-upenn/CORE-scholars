@@ -7,17 +7,13 @@ from . import account
 from .. import db, csrf
 from ..email import send_email
 
-from ..models import User, Module, SavingsHistory, EditableHTML, PhoneNumberState, Stage, SiteAttributes
+from ..models import User, SavingsHistory, EditableHTML, PhoneNumberState, Stage, SiteAttributes
 from .forms import (ChangeEmailForm, ChangePasswordForm, CreatePasswordForm,
                     LoginForm, RegistrationForm, RequestResetPasswordForm,
                     ResetPasswordForm, ProfileForm, SavingsStartEndForm, SavingsHistoryForm,
-                    VerifyPhoneNumberForm, SavingsUpdateForm)
+                    VerifyPhoneNumberForm)
 
-from wtforms.fields.core import Label
-from twilio.rest import Client
-
-import logging
-from datetime import datetime, date as datetime_date, timedelta
+from datetime import timedelta
 import json
 import os
 import time
@@ -28,24 +24,9 @@ import random
 @account.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
-    form = SavingsUpdateForm()
-    if form.validate_on_submit():
-        savings = SavingsHistory(date=datetime_date.today(), balance = form.balance.data, user_id=current_user.id)
-        current_user.bank_balance = form.balance.data
-        db.session.add(savings)
-        db.session.commit()
-        return redirect(url_for('account.index'))
-    form.balance.data = current_user.bank_balance
-    if not current_user.goal_amount or not current_user.savings_start_date or not current_user.savings_end_date:
-        goal_balance = 500
-    else:
-        goal_balance = min(current_user.goal_amount, float(current_user.goal_amount)*(datetime_date.today()-current_user.savings_start_date).days/(current_user.savings_end_date-current_user.savings_start_date).days)
-        goal_balance = round(goal_balance, 2)
-    modules = {module.module_num:module for module in current_user.modules}
-    modules_left = 8 - len(current_user.modules)
-    balance_left = 500.00 - current_user.bank_balance
     str_format = lambda x: '{0:.2f}'.format(x)
-    return render_template('account/index.html', modules=modules, modules_left=modules_left, balance_left=balance_left, str_format=str_format)
+    modules_left = current_user.modules.count(None)
+    return render_template('account/index.html', str_format=str_format, modules_left=modules_left)
 
 
 @account.route('/login', methods=['GET', 'POST'])
@@ -378,36 +359,18 @@ def verify():
     return render_template('account/verify.html', form=form)
 
 
-@account.route('/modules')
-@login_required
-def modules():
-    logging.error(str(current_user.modules))
-    return render_template('account/modules.html',
-                           modules={module.module_num:module for module in current_user.modules},
-                           num_modules=8)
-
-
 @account.route('/modules-update', methods=['GET', 'POST'])
 @login_required
 @csrf.exempt
 def modules_update():
-    module_data = json.loads(request.form['data'])
-    logging.error('here')
-    logging.error(str(module_data))
-    already_exists = False
-    for i in range(len(current_user.modules)):
-        module_num = current_user.modules[i].module_num
-        if module_data['module_num'] == module_num:
-            module = current_user.modules[i]
-            module.filename = module_data['filename']
-            module.certificate_url = module_data['certificate_url']
-            logging.error(module.certificate_url)
-            already_exists = True
-            break
-    if not already_exists:
-        module = Module(user_id=current_user.id, module_num=module_data['module_num'],
-                        filename=module_data['filename'], certificate_url=module_data['certificate_url'])
-        current_user.modules.append(module)
+    data = json.loads(request.form['data'])
+    new_modules = list(current_user.modules)
+    new_modules[data['module_num']] = {
+        'filename': data['filename'],
+        'certificate_url': data['certificate_url']
+    }
+    current_user.modules = new_modules
+    db.session.add(current_user)
     db.session.commit()
     flash('Your progress has been updated.', 'success')
     return jsonify({'status': 200})
@@ -522,7 +485,7 @@ def sign_s3():
 @login_required
 def about():
     editable_html_obj = EditableHTML.get_editable_html('about')
-    return render_template('account/about.html',
+    return render_template('account/editable.html',
                            editable_html_obj=editable_html_obj) 
 
 
@@ -530,6 +493,6 @@ def about():
 @login_required
 def resources():
     editable_html_obj = EditableHTML.get_editable_html('resources')
-    return render_template('account/resources.html',
+    return render_template('account/editable.html',
                            editable_html_obj=editable_html_obj)      
 

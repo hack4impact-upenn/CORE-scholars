@@ -11,24 +11,76 @@
                 <i class="caret left icon"></i>
                 Back to dashboard
             </a>
-            <h2 class="ui header">
-                Manage Airtable Form
-                <div class="sub header">Add HTML for embedded Airtable form.</div>
-            </h2>
-
-            {% set flashes = {
-                'error':   get_flashed_messages(category_filter=['form-error']),
-                'warning': get_flashed_messages(category_filter=['form-check-email']),
-                'info':    get_flashed_messages(category_filter=['form-info']),
-                'success': get_flashed_messages(category_filter=['form-success'])
-            } %}
-
-            {{ f.begin_form(form, flashes) }}
-
-                {{ f.render_form_field(form.airtable_html) }}
-                {{ f.render_form_field(form.submit) }}
-
-            {{ f.end_form() }}
+            <button class="ui basic compact button" onclick="linkAirtableGrid()">Link Airtable Grid</button>
+            <script>
+                function linkAirtableGrid() {
+                    $('#grid')
+                      .modal('show')
+                    ;
+                }
+            </script>
+            <div class="ui modal" id="grid">
+                <i class="close icon"></i>
+                <div class="ui stackable centered grid container">
+                    <div class="fourteen wide column">
+                        <br/>
+                        <h2>Add HTML for embedded Airtable grid</h2>
+                        {% set flashes = {
+                        'error':   get_flashed_messages(category_filter=['form-error']),
+                        'warning': get_flashed_messages(category_filter=['form-check-email']),
+                        'info':    get_flashed_messages(category_filter=['form-info']),
+                        'success': get_flashed_messages(category_filter=['form-success'])
+                        } %}
+                        {{ f.begin_form(grid_form, flashes) }}
+                            <div class="ui message">Please copy and paste the HTML for your embedded form below. This will be the form that all users must fill out before they can use the application for the first time.</div>
+                            {{ f.render_form_field(grid_form.airtable_html) }}
+                            <div class="actions">
+                                {{ f.render_form_field(grid_form.submit) }}
+                            </div>
+                        {{ f.end_form() }}
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            <button class="ui basic compact button" onclick="linkAirtableForm()">Link Airtable Form</button>
+            <script>
+                function linkAirtableForm() {
+                    $('#grid')
+                      .modal('show')
+                    ;
+                }
+            </script>
+            <div class="ui modal" id="grid">
+                <i class="close icon"></i>
+                <div class="ui stackable centered grid container">
+                    <div class="fourteen wide column">
+                        <br/>
+                        <h2>Add HTML for embedded Airtable form</h2>
+                        {% set flashes = {
+                        'error':   get_flashed_messages(category_filter=['form-error']),
+                        'warning': get_flashed_messages(category_filter=['form-check-email']),
+                        'info':    get_flashed_messages(category_filter=['form-info']),
+                        'success': get_flashed_messages(category_filter=['form-success'])
+                        } %}
+                        {{ f.begin_form(survey_form, flashes) }}
+                            <div class="ui message">Please copy and paste the HTML for your embedded form below. This will be the form that all users must fill out before they can use the application for the first time.</div>
+                            {{ f.render_form_field(survey_form.airtable_html) }}
+                            <div class="actions">
+                                {{ f.render_form_field(survey_form.submit) }}
+                            </div>
+                        {{ f.end_form() }}
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            <br>
         </div>
     </div>
+    {% if airtable_grid_html %}
+        <div class="ui stackable centered grid container">
+            <div class="fourteen wide column">
+                {{ grid_html | safe }}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

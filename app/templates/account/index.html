@@ -1,228 +1,65 @@
 {% import 'macros/page_macros.html' as page %}
-{% extends 'layouts/user_base.html' %}
+{% extends 'layouts/base.html' %}
 
-{% macro render_balance() %}
-    <div class="ui stackable grid">
-        <div class="two column row">
-            <div class="column">
-                <div class="ui massive input">
-                    <div class="test"><input type="text" class="account-balance-input" placeholder="{{str_format(500-balance_left)}}"></span> </div>
-                    <button class="ui disabled big icon white button input-icon-button">
-                      <i class="check circle large grey big icon input-icon" data-content="Click to save balance"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <br/>
-    <br/>
-     <p class="ui account-balance-left"><span class="account-balance-left-query">${{str_format(balance_left)}}</span> left to $500</p>
-     <div class="ui red progress" data-percent="{{(500-balance_left)/500*100}}">
-        <div class="bar"></div>
-    </div>
-    <script>
-        $('.input-icon').popup({variation: 'inverted'})
-        $('.ui.red.progress').progress();
-        $('.input-icon').click(function() {
-            balance = $(".account-balance-input").val()
-            console.log(balance)
-            $.ajax({
-                type: 'POST',
-                url: "{{ url_for('account.balance_update') }}",
-                data: {balance: balance},
-                dataType: 'json',
-                success: function(data, textStatus) {
-                    if (data.redirect) {
-                        window.location.href = data.redirect;
-                    }
-                }
-            }).done(function (response) {
-                location.reload();
-            });
-        })
-        $(".account-balance-input").focusin(function() {
-            $('.input-icon').attr('class', 'spinner loading large grey big icon input-icon')
-        });
-        $(".account-balance-input").focusout(function() {
-            if (!isNaN(this.value) && this.value >= 0 &&  this.value <= 500) {
-                if (this.value != '' && this.value != {{str_format(500-balance_left)}}) {
-                    $('.input-icon').attr('class', 'check circle large green big icon input-icon')
-                    $('.input-icon-button').attr('class','ui big icon white button input-icon-button')
-                } else {
-                    $('.input-icon').attr('class', 'check circle large grey big icon input-icon')
-                    $('.input-icon-button').attr('class','ui big disabled icon button input-icon-button')
-                    this.value = ""
-                }
-                $('.flashes').empty()
-            } else {
-                $('.flashes').empty()
-                $('.input-icon').attr('class', 'check circle large grey big icon input-icon')
-                $('.input-icon-button').attr('class','ui big disabled icon button input-icon-button')
-                this.value = ""
-                $('.flashes').append('<div class="ui error message"><i class="close icon"></i>Please enter a number between $0 and $500</div>')
-                $('.message .close').on('click', function() {
-                    $(this).closest('.message').transition('fade');
-                });
-            }
-        });
-    </script>
-{% endmacro %}
+{% set bank_balance = current_user.bank_item.balance if current_user.bank_item else 0.0 %}
+{% set bank_goal = current_user.goal_amount %}
+{% set modules = current_user.modules %}
 
 {% block content %}
-<head>
-    <meta content="utf-8" name="charset">
-    <meta content="width=device-width, initial-scale=1" name="viewport">
-    <title>CORE Scholars</title>
-    {% include 'partials/_head.html' %}
-    {# Any templates that extend this template can set custom_head_tags to add scripts to their page #}
-    {% block custom_head_tags %}{% endblock %}
-    <style>
-        .summary-row {
-            background: #2C2C2C;
-            padding: 30px 0px !important;
-        }
-        .header-welcome-back {
-            font-family: Montserrat;
-            font-style: normal;
-            font-weight: 600;
-            line-height: normal;
-            font-size: 11px;
-            text-align: center;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #8F8F8F;
-        }
-        .header-summary {
-            font-family: Montserrat;
-            font-style: normal;
-            font-weight: 300;
-            line-height: 54px;
-            font-size: 42px;
-            text-align: center;
-            letter-spacing: 0.3px;
-            color: #C8C8C8;
-        }
-        .header-summary-query {
-            color: ghostwhite;
-        }
-        .header-modules {
-            font-family: Montserrat;
-            font-style: normal;
-            font-weight: 600;
-            line-height: normal;
-            font-size: 11px;
-            text-align: left;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #8F8F8F;
-            display: inline;
-        }
-        .ui.popup {
-            font-family: Montserrat;
-            font-style: normal;
-            font-weight: 600;
-            line-height: normal;
-            font-size: 11px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #FFFFFF;
-        }
-        .module-label {
-            height: 15px;
-            font-family: Montserrat;
-            font-style: normal;
-            font-weight: 600;
-            line-height: normal;
-            font-size: 12px !important;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #575757;
-            margin-left:30px;
-            display: inline-block;
-        }
-        .module-sub-label {
-            font-family: Montserrat;
-            font-style: normal;
-            font-weight: normal;
-            line-height: normal;
-            font-size: 10px;
-            letter-spacing: 0.5px;
-
-            color: #575757;
-        }
-        .account-balance-left {
-            font-family: Montserrat;
-            font-style: thin, normal;
-            font-weight: 300;
-            line-height: 22px;
-            font-size: 18px;
-            text-align: left;
-            letter-spacing: 0.3px;
-            color: #8F8F8F;
-        }
-        .account-balance-left-query {
-            color: black;
-        }
-        .account-balance-input {
-            font-family: Montserrat;
-            font-style: thin;
-            font-size: 42px;
-            line-height: 51px;
-            text-align: left;
-            padding-left: 30px !important;
-            width: 96%;
-        }
-        .test {
-            position: relative;
-            display: inline;
-        }
-        .test:before {
-            content: '$';
-            position: absolute;
-            font-style: thin;
-            font-size: 42px;
-            line-height: 51px;
-            text-align: left;
-            top:29px;
-            left: 5px;
-        }
-        .input-icon {
-            opacity:1.0 !important;
-            margin-left:2px !important;
-            margin-top:33px !important;
-        }
-        
-    </style>
-</head>
-<body>
-    <div class="ui stackable grid">
-        <div class="computer tablet only row summary-row">
-            <div class="three wide column"></div>
-            <div class="ten wide column">
-                <h4 class="ui center aligned header-welcome-back">Welcome back, {{current_user.first_name}}.</h4>
-                <h1 class="ui center aligned header-summary">
-                    You have <span class="header-summary-query">${{str_format(balance_left)}}</span> left to save and <span class="header-summary-query">{{modules_left}}</span> modules left to complete.
-                </h1>
-                <br>
+<div class="ui stackable grid">
+    <div class="computer tablet only row summary-row">
+        <div class="three wide column"></div>
+        <div class="ten wide column">
+            <h4 class="ui center aligned header-welcome-back">Welcome back, {{current_user.first_name}}.</h4>
+            <h1 class="ui center aligned header-summary">
+                {% if bank_balance < bank_goal and modules_left > 0 %}
+                    You have <span class="header-summary-query">${{str_format(bank_goal - bank_balance)}}</span>
+                    left to save and <span class="header-summary-query">{{modules_left}}</span> modules left to
+                    complete.
+                {% elif bank_balance >= bank_goal and modules_left > 0 %}
+                    You have <span class="header-summary-query">{{modules_left}}</span> modules left to complete.
+                    Congrats on saving <span class="header-summary-query">${{str_format(bank_balance)}}</span>!
+                {% elif bank_balance < bank_goal and modules_left == 0 %}
+                    You have <span class="header-summary-query">${{str_format(bank_goal - bank_balance)}}</span>
+                    left to save. Congrats on completing the <span class="header-summary-query">
+                    {{modules|length}}</span> modules!
+                {% else  %}
+                    Congrats on saving <span class="header-summary-query">${{str_format(bank_balance)}}</span> and on
+                    completing the <span class="header-summary-query">{{modules|length}}</span> modules. Go you!
+                {% endif %}
+            </h1>
+            {% set progress_balance = bank_balance if bank_balance <= bank_goal else bank_goal %}
+            {% set progress_balance = progress_balance / bank_goal * 100 %}
+            <h2 class="header-progress-bar">${{ bank_balance }}</h2>
+            <div class="ui red progress" data-percent="{{progress_balance}}" style="background-color: white">
+                <div class="bar"></div>
             </div>
-            <div class="three wide column"></div>
+            <br>
         </div>
-        <div class="row">
-            <div class="three wide computer tablet only column"></div>
-            <div class="three wide computer tablet only column">
-                <h4 class="ui header-modules">Modules </h4>
-                <i class="info circle icon modules-info" data-content="Instructions coming soon!"></i>
-                {% for i in range(1, 9) %}
-                    <div class="ui segment module-segment" {% if i in modules.keys() %}style="mix-blend-mode: normal; opacity: 0.5;"{% endif %}>
-                        <div class="ui checkbox module">
-                            <input type="file" id="file{{i}}" hidden>
-                            <label data-content="Upload a file." class="module{{i}}-checkbox"></label>
-                            <span class="module-label">Module {{i}}<br />
-                                {% if i in modules.keys() %}
-                                    <a class="module-sub-label" href={{ modules[i].certificate_url }}>{{ modules[i].filename }}</a>
-                                {% endif %}
-                            </span>
+        <div class="three wide column"></div>
+    </div>
+    <div class="row">
+        <div class="three wide computer tablet only column"></div>
+        <div class="ten wide computer tablet only column">
+            <h4 class="ui header-modules">Modules </h4>
+            <i class="info circle icon modules-info" data-content="Instructions coming soon!"></i>
+            <div class="ui three column grid">
+                {% for module in modules %}
+                    {% set i = loop.index - 1 %}
+                    <div class="column">
+                        <div class="ui segment module-segment" {% if module %}
+                             style="mix-blend-mode: normal; opacity: 0.5;"{% endif %}>
+                            <div class="ui checkbox module">
+                                <input type="file" id="file{{i}}" hidden>
+                                <label data-content="Upload a file." class="module{{i}}-checkbox"></label>
+                                <span class="module-label">Module {{i + 1}}<br />
+                                    {% if module %}
+                                        <a class="module-sub-label" href={{ module.certificate_url }}>
+                                            {{ module.filename }}</a>
+                                    {% endif %}
+                                </span>
 
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
@@ -233,41 +70,31 @@
                         offset: -6,
                     });
                     $('.modules-info').popup({variation: 'inverted'})
-                    {% for i in range(1, 9) %}
-                        $('.module{{i}}-checkbox').click(function (event) {
+                    {% for i in range(modules|length) %}
+                        $('.module{{i}}-checkbox').click(function () {
                             $('#file{{i}}').click();
                         })
                     {% endfor %}
                 </script>
             </div>
-            <div class="seven wide column">
-                <h4 class="ui header-modules">Current Balance</h4>
-                <ui class="ui grid">
-                    <div class="computer tablet only row">
-                        <div class="ui raised segment" style="height:250px">{{render_balance()}}</div>
-                    </div>
-                    <div class="mobile only row">
-                        <div style="height:250px; margin:20px">{{render_balance()}}</div>
-                    </div>
-                </ui>
-            <div class="two wide computer tablet only column"></div>
         </div>
+        <div class="three wide computer tablet only column"></div>
     </div>
+</div>
 
-    {# Implement CSRF protection for site #}
-    {% if csrf_token()|safe %}
-        <div style="visibility: hidden; display: none">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token()|safe }}">
-        </div>
-    {% endif %}
+{# Implement CSRF protection for site #}
+{% if csrf_token()|safe %}
+    <div style="visibility: hidden; display: none">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token()|safe }}">
+    </div>
+{% endif %}
 
 <script>
+
+    $('.ui.red.progress').progress();
+
  function uploadFile(file, s3Data, url, urlUpload, fieldName){
   // basic validation
-  var fileType = url.substring(url.lastIndexOf('.') + 1);
-  console.log(url);
-  console.log(urlUpload);
-
   var xhr = new XMLHttpRequest();
   xhr.upload.addEventListener("progress", updateProgress);
   xhr.open('POST', urlUpload);
@@ -284,7 +111,6 @@
   ;
   function updateProgress (e) {
     if (e.lengthComputable) {
-      var percentComplete = ((100*e.loaded)/e.total).toFixed(2);
       var percentCompleteShort = ((100*e.loaded)/e.total).toFixed(0);
       $('#progress').text(percentCompleteShort);
     }
@@ -303,16 +129,6 @@
   xhr.send(postData);
 }
 
-function handleFunc(url, fieldName) {
-  files[fieldName] = url;
-  console.log(files)
-};
-
-/*
-      Function to get the temporary signed request from the Python app.
-      If request successful, continue to upload the file using this signed
-      request.
- */
 function getSignedRequest(file, fieldName){
   var xhr = new XMLHttpRequest();
   xhr.open('GET', `/account/sign-s3?file-name=${file.name}&file-type=${file.type}`);
@@ -341,12 +157,12 @@ function progressUpdate(url, filename, field) {
         url: "{{ url_for('account.modules_update') }}",
         data: {data: JSON.stringify(module_map)},
         dataType: 'json',
-        success: function(data, textStatus) {
+        success: function(data) {
             if (data.redirect) {
                 window.location.href = data.redirect;
             }
         }
-    }).done(function (response) {
+    }).done(function () {
         location.reload();
     });
 }
@@ -362,5 +178,5 @@ function progressUpdate(url, filename, field) {
         });
     });
 </script>
-</body>
+
 {% endblock %}

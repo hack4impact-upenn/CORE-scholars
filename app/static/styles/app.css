@@ -35,3 +35,71 @@ table.selectable tr:hover {
     text-transform: uppercase;
     color: #8F8F8F !important;
 }
+
+.summary-row {
+    background: #2C2C2C;
+    padding: 30px 0px !important;
+}
+.header-welcome-back {
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-size: 11px;
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8F8F8F;
+}
+.header-summary {
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 54px;
+    font-size: 42px;
+    text-align: center;
+    letter-spacing: 0.3px;
+    color: #C8C8C8;
+}
+.header-summary-query {
+    color: ghostwhite;
+}
+.header-modules {
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-size: 11px;
+    text-align: left;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #8F8F8F;
+    display: inline;
+}
+.module-label {
+    height: 15px;
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    font-size: 12px !important;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #575757;
+    margin-left:30px;
+    display: inline-block;
+}
+.module-sub-label {
+    font-family: Montserrat;
+    font-style: normal;
+    font-weight: normal;
+    line-height: normal;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+
+    color: #575757;
+}
+.header-progress-bar {
+    font-family: Montserrat;
+    color: white;
+}

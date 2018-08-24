@@ -75,7 +75,8 @@ def setup_general():
     """Runs the set-up needed for both local development and production.
        Also sets up first admin user."""
     Role.insert_roles()
-    SiteAttributes.create_entry()
+    site = SiteAttributes()
+    db.session.add(site)
     admin_query = Role.query.filter_by(name='Administrator')
     if admin_query.first() is not None:
         if User.query.filter_by(email=Config.ADMIN_EMAIL).first() is None:
@@ -86,8 +87,8 @@ def setup_general():
                 stage=Stage.COMPLETE,
                 email=Config.ADMIN_EMAIL)
             db.session.add(user)
-            db.session.commit()
             print('Added administrator {}'.format(user.full_name()))
+    db.session.commit()
 
 
 @manager.command

@@ -1,15 +1,15 @@
-from flask import abort, flash, redirect, render_template, url_for, request, jsonify
+from flask import abort, flash, redirect, render_template, url_for, request
 from flask_login import current_user, login_required
 from flask_rq import get_queue
-
 from .forms import (ChangeAccountTypeForm, ChangeUserEmailForm, InviteUserForm,
-                    NewUserForm, AirtableFormHTML, LinkBankAccount)
+                    NewUserForm, AirtableSurveyHTML, AirtableGridHTML, LinkBankAccount)
 from . import admin
 from .. import db, csrf
 from ..decorators import admin_required
 from ..email import send_email
 from ..models import Role, User, EditableHTML, SiteAttributes, PlaidBankAccount, PlaidBankItem
 from config import Config
+
 
 @admin.route('/')
 @login_required
@@ -146,7 +146,6 @@ def link_bank_account(user_id):
     if user is None:
         abort(404)
     form = LinkBankAccount()
-    # form.account_owner.choices = [(acct.item_id, acct.name) for acct in PlaidBankAccount.query.all()]
     PlaidBankAccount.update_all_items()
     items = PlaidBankItem.query.filter_by(is_open=True).all()
     form.bank_item.choices = [(item.item_id, item.get_display_name()) for item in items]
@@ -208,19 +207,27 @@ def update_editor_contents():
     return 'OK', 200
 
 
-@admin.route('/manage_airtable', methods=['GET', 'POST'])
+@admin.route('/airtable', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def manage_airtable():
     site = SiteAttributes.query.all()[0]
-    form = AirtableFormHTML()
-    if site.airtable_html != '':
-        form.airtable_html.data = site.airtable_html
-    if form.validate_on_submit():
-        site.airtable_html = form.airtable_html.raw_data[0]
+    grid_form = AirtableGridHTML()
+    survey_form = AirtableSurveyHTML()
+    if site.form_html != '':
+        survey_form.airtable_html.data = site.form_html
+    if site.grid_html != '':
+        grid_form.airtable_html.data = site.grid_html
+    if survey_form.validate_on_submit():
+        site.form_html = survey_form.airtable_html.raw_data[0]
         db.session.add(site)
         db.session.commit()
-    return render_template('admin/manage_airtable.html', form=form)
+    if grid_form.validate_on_submit():
+        site.grid_html = grid_form.airtable_html.raw_data[0]
+        db.session.add(site)
+        db.session.commit()
+    return render_template('admin/manage_airtable.html', grid_form=grid_form, survey_form=survey_form,
+                           grid_html=site.grid_html)
 
 
 @admin.route('/link-bank', methods=['GET'])
@@ -233,6 +240,22 @@ def link_admin_bank():
     return render_template('admin/link_bank.html', config=Config, bank_accounts=bank_accounts, bank_items=bank_items)
 
 
+@admin.route('/bank/<int:bank_id>/delete-account', methods=['GET'])
+@admin_required
+def delete_admin_bank(bank_id):
+    bank_account = PlaidBankAccount.query.filter_by(id=bank_id).first()
+    bank_account_name = bank_account.name
+    if bank_account is None:
+        abort(404)
+    for item in bank_account.items:
+        db.session.delete(item)
+    db.session.delete(bank_account)
+    db.session.commit()
+    flash('Deleted bank account, ' + bank_account_name)
+    return redirect(url_for('admin.link_admin_bank'))
+
+
+@admin_required
 @admin.route('/bank/<int:bank_id>/update-account-name', methods=['GET'])
 def change_admin_account_name(bank_id):
     bank_account = PlaidBankAccount.query.filter_by(id=bank_id).first()

@@ -35,7 +35,7 @@
                 <i class="caret left icon"></i>
                 Back to dashboard
             </a>
-            <button id="link-btn" class="ui inverted red compact button">Link Bank Account</button>
+            <button id="link-btn" class="ui basic compact button">Link bank account</button>
 
             {% set flashes = {
                 'error':   get_flashed_messages(category_filter=['form-error']),
@@ -44,8 +44,6 @@
                 'success': get_flashed_messages(category_filter=['form-success'])
             } %}
 
-            <!-- TODO: Link Plaid -->
-
             <br/><br/>
             <div>
                 {% for i in range(bank_accounts|length) %}
@@ -53,7 +51,11 @@
                     <div class="ui segment">
                         <div>
                             <h2 class="account-name" id="account-name-{{id}}">{{ bank_accounts[i].name }}</h2>
-                            <a class="ui large label" id="edit-account-name-{{id}}" onclick="editAccountName({{id}})">edit</a>
+                            <a class="ui basic compact button" id="edit-account-name-{{id}}"
+                               onclick="editAccountName({{id}})" style="margin-left: 8px">edit</a>
+                            <a href="{{ url_for('admin.delete_admin_bank', bank_id=id) }}">
+                                <i class="trash alternate outline large icon" style="float: right; margin-top: 8px"></i>
+                            </a>
                         </div>
                         <div class="ui divider"></div>
                         <div class="ui three column grid">
@@ -72,7 +74,9 @@
                                         </div>
                                         {% if item.scholar %}
                                             <br/>
-                                            <span class="ui basic label">{{ item.scholar.full_name() }}</span>
+                                            <span class="ui basic label">
+                                                <a href="{{ url_for('admin.user_info', user_id=item.scholar.id) }}">{{ item.scholar.full_name() }}</a>
+                                            </span>
                                         {% endif %}
                                         <br>
                                     </div>

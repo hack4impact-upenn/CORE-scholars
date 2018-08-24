@@ -146,8 +146,3 @@ class SavingsHistoryForm(Form):
 
     def __repr__(self):
         return '<SavingsHistory {}, {}>'.format(self.date, self.balance)
-
-
-class SavingsUpdateForm(Form):
-    balance = IntegerField('Balance')
-    submit = SubmitField('Update')

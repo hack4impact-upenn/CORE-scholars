@@ -26,13 +26,18 @@ class PhoneNumberState(db.Model):
 
 class SiteAttributes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    airtable_html = db.Column(db.Text)
+    grid_html = db.Column(db.Text, default=str())
+    form_html = db.Column(db.Text, default=str())
+    savings_goal = db.Column(db.Integer, default=int(Config.INIT_SAVINGS_GOAL))
+    num_modules = db.Column(db.Integer, default=int(Config.INIT_NUM_MODULES))
 
     @staticmethod
-    def create_entry():
-        entry = SiteAttributes(airtable_html=str())
-        db.session.add(entry)
-        db.session.commit()
+    def get_savings_goal():
+        return SiteAttributes.query.all()[0].savings_goal
+
+    @staticmethod
+    def get_num_modules():
+        return SiteAttributes.query.all()[0].num_modules
 
 
 class PlaidBankAccount(db.Model):

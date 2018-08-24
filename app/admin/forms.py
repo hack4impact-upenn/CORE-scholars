@@ -66,11 +66,11 @@ class NewUserForm(InviteUserForm):
     submit = SubmitField('Create')
 
 
-class AirtableFormHTML(Form):
-    airtable_html = TextAreaField('Airtable Form', validators=[InputRequired()],
-                                  description= 'Airtable allows you to create a customizable form and access the '
-                                               'responses in the form of a beautiful and powerful spreadsheet. Please '
-                                               'copy and paste the HTML for your embedded form below. This will be the '
-                                               'form that all users must fill out before they can use the application '
-                                               'for the first time.')
+class AirtableGridHTML(Form):
+    airtable_html = TextAreaField('', validators=[InputRequired()])
+    submit = SubmitField('Submit')
+
+
+class AirtableSurveyHTML(Form):
+    airtable_html = TextAreaField('', validators=[InputRequired()])
     submit = SubmitField('Submit')

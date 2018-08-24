@@ -45,6 +45,9 @@ class Config:
     PLAID_PUBLIC_KEY = os.environ.get('PLAID_PUBLIC_KEY')
     PLAID_ENV = os.environ.get('PLAID_ENV', 'sandbox')
 
+    INIT_SAVINGS_GOAL = os.environ.get('INIT_SAVINGS_GOAL', 500)
+    INIT_NUM_MODULES = os.environ.get('INIT_NUM_MODULES', 8)
+
     # Analytics
     GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID') or ''
     SEGMENT_API_KEY = os.environ.get('SEGMENT_API_KEY') or ''

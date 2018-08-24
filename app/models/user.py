@@ -3,8 +3,10 @@ from flask_login import AnonymousUserMixin, UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import BadSignature, SignatureExpired
 from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy_utils import JSONType
 
 from .. import db, login_manager
+from .miscellaneous import SiteAttributes
 
 import random
 
@@ -47,18 +49,18 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role \'%s\'>' % self.name
 
+#
+# module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+#  db.Column('module_num', db.Integer, db.ForeignKey('modules.module_num'))
+# )
 
-module_associations = db.Table('module_association', db.Model.metadata, db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
- db.Column('module_num', db.Integer, db.ForeignKey('modules.module_num'))
-)
-
-
-class Module(db.Model):
-    __tablename__ = 'modules'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    certificate_url = db.Column(db.String(256), unique=True)
-    module_num = db.Column(db.Integer, index=True, primary_key=True)
-    filename = db.Column(db.String(256))
+#
+# class Module(db.Model):
+#     __tablename__ = 'modules'
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+#     certificate_url = db.Column(db.String(256), unique=True)
+#     module_num = db.Column(db.Integer, index=True, primary_key=True)
+#     filename = db.Column(db.String(256))
 
 
 class Transactions(db.Model):
@@ -89,26 +91,14 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String(64), index=True)
     email = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
-    location = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     bank_item_id = db.Column(db.Integer, db.ForeignKey('bank_items.id'))
     bank_item = db.relationship('PlaidBankItem', backref=db.backref('scholar', uselist=False))
-
-    mobile_phone = db.Column(db.String(64))
-    home_phone = db.Column(db.String(64))
-
-    street = db.Column(db.String(64))
-    city = db.Column(db.String(64))
-    state = db.Column(db.String(64))
-    zip = db.Column(db.String(64))
-
-    bank_balance = db.Column(db.Integer)
     bank_acct_open = db.Column(db.Date)
     savings_start_date = db.Column(db.Date)
     savings_end_date = db.Column(db.Date)
     goal_amount = db.Column(db.Integer)
-    modules = db.relationship('Module', secondary=module_associations)
-    TOTAL_MODULES = db.Column(db.Integer)
+    modules = db.Column(JSONType)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -120,9 +110,8 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(default=True).first()
         self.savings_start_date = None
         self.savings_end_date = None
-        self.bank_balance = 0
-        self.goal_amount = 500
-        self.TOTAL_MODULES = 8
+        self.goal_amount = SiteAttributes.get_savings_goal()
+        self.modules = [None for k in range(1, SiteAttributes.get_num_modules()+1)]
 
     def full_name(self):
         return '%s %s' % (self.first_name, self.last_name)
